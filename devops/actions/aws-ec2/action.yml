@@ -1,6 +1,19 @@
 name: aws-ec2
 description: 'Starts AWS EC2 spot instance with github actions runner agent in it to process one job'
 
+inputs:
+  GITHUB_REG_TOKEN:
+    description: Github Actions Runner registration token.
+    required: true
+  AWS_ACCESS_KEY_ID:
+    description: AWS access id.
+    required: true
+ AWS_SECRET_ACCESS_KEY:
+    description: AWS access secret key.
+    required: true
+outputs:
+  label:
+    description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs.
 runs:
   using: node12
   main: ./aws-ec2.js
