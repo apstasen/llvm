@@ -1,6 +1,0 @@
-name: 'aws-start'
-description: 'Start AWS EC2 spot instance'
-
-runs:
-  using: 'node12'
-  main: 'aws-start.js'
