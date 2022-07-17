@@ -1,0 +1,6 @@
+name: aws-ec2
+description: 'Starts AWS EC2 spot instance with github actions runner agent in it to process one job'
+
+runs:
+  using: node12
+  main: ./aws-ec2.js
