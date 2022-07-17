@@ -9,7 +9,7 @@ async function main() {
 
   const ec2 = new AWS.EC2({region: "us-east-1"});
   
-  const reg_token = core.getInput('GITHUB_REG_TOKEN');
+  const reg_token = core.getInput('RUNNER_REG_TOKEN');
   const label     = "aws_" + Math.random().toString(36).substr(2, 7);
   
   const setup_github_actions_runner = [
