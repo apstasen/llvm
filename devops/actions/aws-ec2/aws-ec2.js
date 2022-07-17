@@ -4,13 +4,14 @@ const AWS    = require('aws-sdk');
 
 async function main() {
   AWS.config = new AWS.Config();
-  AWS.config.accessKeyId     = core.getInput('AWS_ACCESS_KEY_ID');
-  AWS.config.secretAccessKey = core.getInput('AWS_SECRET_ACCESS_KEY');
+  AWS.config.accessKeyId     = core.getInput("AWS_ACCESS_KEY_ID");
+  AWS.config.secretAccessKey = core.getInput("AWS_SECRET_ACCESS_KEY");
 
-  const ec2 = new AWS.EC2({region: "us-east-1"});
+  const ec2 = new AWS.EC2({region: core.getInput("aws-region")});
   
-  const reg_token = core.getInput('RUNNER_REG_TOKEN');
+  const reg_token = core.getInput("RUNNER_REG_TOKEN");
   const label     = "aws_" + Math.random().toString(36).substr(2, 7);
+  const timebomb  = core.getInput("aws-ec2-timebomb");
   
   const setup_github_actions_runner = [
     '#!/bin/bash',
@@ -19,7 +20,7 @@ async function main() {
     'curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
     'tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
     `./config.sh --unattended --url https://github.com/${github.context.repo.owner}/${github.context.repo.repo} --token ${reg_token} --labels ${label} --replace || shutdown -h now`,
-    `(sleep 5m; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+    `(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
     `./run.sh --once`,
     `./config.sh remove --token ${reg_token}`,
     'shutdown -h now'
@@ -27,8 +28,8 @@ async function main() {
   
   try {
     const result = await ec2.requestSpotInstances({
-      ImageId: "ami-068257025f72f470d", // Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-06-09
-      InstanceType: "t2.micro",
+      ImageId: core.getInput("aws-ami"),
+      InstanceType: core.getInput("aws-ec2-type"),
       InstanceInitiatedShutdownBehavior: "terminate",
       LaunchSpecification: {
         UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64')
