@@ -8,10 +8,26 @@ inputs:
   AWS_ACCESS_KEY_ID:
     description: AWS access id.
     required: true
- AWS_SECRET_ACCESS_KEY:
+  AWS_SECRET_ACCESS_KEY:
     description: AWS access secret key.
     required: true
-    
+  aws-region:
+    description: AWS EC2 region.
+    required: false
+    default: "us-east-1" // Ohio
+  aws-ami:
+    description: AWS AMI id.
+    required: false
+    default: "ami-068257025f72f470d" // Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-06-09
+  aws-ec2-type:
+    description: AWS EC2 instance type.
+    required: false
+    default: "t2.micro"
+  aws-ec2-timebomb:
+    description: AWS EC2 instance maximum live time.
+    required: false
+    default: 1h
+ 
 outputs:
   label:
     description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs.
