@@ -176,11 +176,11 @@ jobs:
     steps:
     - name: Download scripts and configs
       run: |
-        wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/scripts/generate_test_matrix.js
-        wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/test_configs.json
-        wget raw.githubusercontent.com/intel/llvm/sycl/devops/dependencies.json
+        wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/scripts/generate_test_matrix.js
+        wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/test_configs.json
+        wget raw.githubusercontent.com/apstasen/llvm/sycl/devops/dependencies.json
         mv dependencies.json dependencies.sycl.json
-        wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/dependencies.json
+        wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/dependencies.json
     - id: work
       uses: actions/github-script@v6
       name: Generate matrix
@@ -219,7 +219,7 @@ jobs:
       run: |
         if [ -e /opt/install_drivers.sh ]; then
           # TODO pack this script into container
-          wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/scripts/get_release.py
+          wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/scripts/get_release.py
           sudo mv get_release.py /opt/
           sudo -E /opt/install_drivers.sh --all
         fi
