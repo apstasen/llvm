@@ -11,9 +11,11 @@ inputs:
  AWS_SECRET_ACCESS_KEY:
     description: AWS access secret key.
     required: true
+    
 outputs:
   label:
     description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs.
+    
 runs:
   using: node12
   main: ./aws-ec2.js
