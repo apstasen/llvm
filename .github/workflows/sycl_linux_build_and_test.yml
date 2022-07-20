@@ -75,7 +75,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: llvm
-      - run: npm install ./llvm/devops/actions/aws-ec2/package.json
+      - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Start EC2 runner
         id: start-ec2-runner
         uses: ./llvm/devops/actions/aws-ec2
