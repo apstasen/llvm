@@ -5,10 +5,10 @@ inputs:
   RUNNER_REG_TOKEN:
     description: Github Actions Runner registration token
     required: true
-  AWS_ACCESS_KEY_ID:
+  AWS_ACCESS_KEY:
     description: AWS access id
     required: true
-  AWS_SECRET_ACCESS_KEY:
+  AWS_SECRET_KEY:
     description: AWS access secret key
     required: true
   aws-region:
