@@ -4,7 +4,7 @@ const AWS    = require('aws-sdk');
 
 async function main() {
   AWS.config.update({
-    apiVersion: 'latest',
+    apiVersion: "2010-12-01",
     accessKeyId: core.getInput("AWS_ACCESS_KEY"),
     secretAccessKey: core.getInput("AWS_SECRET_KEY"),
     region: core.getInput("aws-region")
