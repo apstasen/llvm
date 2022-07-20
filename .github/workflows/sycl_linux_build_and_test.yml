@@ -70,6 +70,8 @@ jobs:
     name: Start self-hosted EC2 runner
     runs-on: ubuntu-latest
     environment: aws
+    env:
+      aws-access-key: ${{ secrets.SECRET1 }}
     outputs:
       label: ${{ steps.start-awc-ec2-runner.outputs.label }}
     steps:
