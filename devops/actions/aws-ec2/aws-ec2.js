@@ -5,10 +5,8 @@ const AWS    = require('aws-sdk');
 async function main() {
   AWS.config.update({
     apiVersion: 'latest',
-    credentials: {
-      accessKeyId: core.getInput("AWS_ACCESS_KEY"),
-      secretAccessKey: core.getInput("AWS_SECRET_KEY"),
-    },
+    accessKeyId: core.getInput("AWS_ACCESS_KEY"),
+    secretAccessKey: core.getInput("AWS_SECRET_KEY"),
     region: core.getInput("aws-region")
   });
   const ec2 = new AWS.EC2();
