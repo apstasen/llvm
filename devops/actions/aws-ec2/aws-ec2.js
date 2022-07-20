@@ -8,6 +8,8 @@ async function main() {
     secretAccessKey: core.getInput("AWS_SECRET_KEY"),
     region:          core.getInput("aws-region")
   });
+  const test = core.getInput("AWS_ACCESS_KEY");
+  core.info(`XXX ${test}`);
   const ec2 = new AWS.EC2();
   
   const reg_token = core.getInput("RUNNER_REG_TOKEN");
