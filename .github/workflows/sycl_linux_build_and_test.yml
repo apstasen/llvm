@@ -69,6 +69,7 @@ jobs:
   start-awc-ec2-runner:
     name: Start self-hosted EC2 runner
     runs-on: ubuntu-latest
+    environment: aws
     outputs:
       label: ${{ steps.start-awc-ec2-runner.outputs.label }}
     steps:
@@ -82,7 +83,7 @@ jobs:
         with:
           RUNNER_REG_TOKEN: ${{ secrets.RUNNER_REG_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-access-key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-access-key: ${{ secrets.SECRET1 }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   build:
     name: Build + LIT
