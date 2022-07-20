@@ -27,30 +27,20 @@ async function main() {
   ];
   
   try {
-    const result = await ec2.requestSpotInstances({
+    const result = await ec2.runInstances({
       ImageId: core.getInput("aws-ami"),
       InstanceType: core.getInput("aws-ec2-type"),
+      InstanceMarketOptions: { MarketType: "spot" },
       InstanceInitiatedShutdownBehavior: "terminate",
-      LaunchSpecification: {
-        UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64')
-      },
+      UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
       TagSpecifications: [ { ResourceType: "instance", Tags: [
         { Key: "Label", value: label }
       ] } ]
     }).promise();
-    const spotFleetRequestId = result.SpotFleetRequestId;
-    core.info(`Created AWS EC2 spot instance request ${spotFleetRequestId} for spot instance with ${label} label`);
+    const ec2InstanceId = result.Instances[0].InstanceId;
+    core.info(`Created AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
   } catch (error) {
-    core.error(`Error creating AWS EC2 spot instance request for spot instance with ${label} label`);
-    throw error;
-  }
-
-  try {
-    await ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
-    core.info(`Created AWS EC2 spot instance with ${label} label in ${spotFleetRequestId} spot instance request`);
-    core.setOutput('label', label);
-  } catch (error) {
-    core.error(`Error creating AWS EC2 spot instance with ${label} label in ${spotFleetRequestId} spot instance request`);
+    core.error(`Error creating AWS EC2 spot instance with ${label} label`);
     throw error;
   }
 }
