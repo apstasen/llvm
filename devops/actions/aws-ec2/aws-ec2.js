@@ -32,9 +32,11 @@ async function main() {
       InstanceType: core.getInput("aws-ec2-type"),
       InstanceMarketOptions: { MarketType: "spot" },
       InstanceInitiatedShutdownBehavior: "terminate",
-      UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
+      UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),      
+      MinCount: 1,
+      MaxCount: 1,
       TagSpecifications: [ { ResourceType: "instance", Tags: [
-        { Key: "Label", value: label }
+        { Key: "Label", Value: label }
       ] } ]
     }).promise();
     const ec2InstanceId = result.Instances[0].InstanceId;
