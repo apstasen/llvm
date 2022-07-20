@@ -81,8 +81,8 @@ jobs:
         uses: ./llvm/devops/actions/aws-ec2
         with:
           RUNNER_REG_TOKEN: ${{ secrets.RUNNER_REG_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   build:
     name: Build + LIT
     needs: start-awc-ec2-runner
