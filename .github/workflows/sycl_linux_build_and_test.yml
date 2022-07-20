@@ -84,7 +84,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   build:
     name: Build + LIT
-    runs-on: ubuntu-latest
+    needs: start-awc-ec2-runner
+    runs-on: ${{ needs.start-awc-ec2-runner.outputs.label }}
     container:
       image: ${{ inputs.build_image }}
       options: -u 1001:1001
