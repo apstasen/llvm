@@ -8,7 +8,7 @@ async function main() {
     secretAccessKey: core.getInput("AWS_SECRET_KEY"),
     region:          core.getInput("aws-region")
   });
-  const test = core.getInput("AWS_ACCESS_KEY");
+  const test = core.getInput("aws-access-key");
   core.info(`XXX ${test}`);
   const ec2 = new AWS.EC2();
   
