@@ -3,11 +3,12 @@ const github = require('@actions/github');
 const AWS    = require('aws-sdk');
 
 async function main() {
-  const ec2 = new AWS.EC2({
-    accessKeyId: core.getInput("AWS_ACCESS_KEY_ID"),
-    secretAccessKey: core.getInput("AWS_SECRET_ACCESS_KEY"),
+  AWS.config.update({
+    accessKeyId: core.getInput("AWS_ACCESS_KEY"),
+    secretAccessKey: core.getInput("AWS_SECRET_KEY"),
     region: core.getInput("aws-region")
   });
+  const ec2 = new AWS.EC2();
   
   const reg_token = core.getInput("RUNNER_REG_TOKEN");
   const label     = "aws_" + Math.random().toString(36).substr(2, 7);
