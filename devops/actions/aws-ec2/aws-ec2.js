@@ -49,7 +49,7 @@ async function start(label) {
     `shutdown -h now`
   ];
   
-  let ec2InstanceId;
+  let ec2id;
   try {
     const result = await ec2.runInstances({
       ImageId: core.getInput("aws-ami"),
@@ -64,8 +64,8 @@ async function start(label) {
         { Key: "Label", Value: label }
       ] } ]
     }).promise();
-    ec2InstanceId = result.Instances[0].InstanceId;
-    core.info(`Created AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
+    ec2id = result.Instances[0].InstanceId;
+    core.info(`Created AWS EC2 spot instance ${ec2id} with ${label} label`);
   } catch (error) {
     core.error(`Error creating AWS EC2 spot instance with ${label} label`);
     throw error;
@@ -73,21 +73,21 @@ async function start(label) {
   
   try {
     await ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
-    core.info(`Found running AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
-    return label;
+    core.info(`Found running AWS EC2 spot instance ${ec2id} with ${label} label`);
+    return ec2Id;
   } catch (error) {
-    core.error(`Error searching for running AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
+    core.error(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label`);
     throw error;
   }
 }
 
-async function stop(label) {
+async function stop(label, ec2id) {
   const ec2 = new AWS.EC2();
   try {
-    await ec2.terminateInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
-    core.info(`Terminated AWS EC2 instance with label ${label}`);
+    await ec2.terminateInstances({ InstanceIds: [ec2id] }).promise();
+    core.info(`Terminated AWS EC2 instance ${ec2id} with label ${label}`);
   } catch (error) {
-    core.info(`Error terminating AWS EC2 instance with label ${label}`);
+    core.info(`Error terminating AWS EC2 instance ${ec2id} with label ${label}`);
     throw error;
   }
   
@@ -114,10 +114,11 @@ async function stop(label) {
     const mode = core.getInput("mode");
     if (mode == "start") {
       const label = "aws_" + Math.random().toString(36).substr(2, 7);
-      await start(label);
+      ec2id = await start(label);
       core.setOutput('label', label);
+      core.setOutput('ec2id', ec2id);
     } else if (mode == "stop") {
-      await stop(core.getInput("label"));
+      await stop(core.getInput("ec2id"));
     }
   } catch (error) {
     core.error(error);
