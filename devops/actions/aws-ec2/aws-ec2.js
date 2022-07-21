@@ -2,32 +2,58 @@ const core   = require('@actions/core');
 const github = require('@actions/github');
 const AWS    = require('aws-sdk');
 
-async function main() {
+const repo = `${github.context.repo.owner}/${github.context.repo.repo}`;
+
+async function getGithubRegToken() {
+  const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
+
+  try {
+    const response = await octokit.request(`POST /repos/${repo}/actions/runners/registration-token`);
+    core.info("Got Github Actions Runner registration token");
+    return response.data.token;
+  } catch (error) {
+    core.error("Error getting Github Actions Runner registration token");
+    throw error;
+  }
+}
+
+async function getGithubRunnerId(label) {
+  const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
+  try {
+    const runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
+    const foundRunners = _.filter(runners, { labels: [{ name: label }] });
+    return foundRunners.length > 0 ? foundRunners[0].id : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function get_ec2() {
   AWS.config.update({
     accessKeyId:     core.getInput("AWS_ACCESS_KEY"),
     secretAccessKey: core.getInput("AWS_SECRET_KEY"),
     region:          core.getInput("aws-region")
   });
-  const ec2 = new AWS.EC2();
   
-  const gh_token = core.getInput("GH_PERSONAL_ACCESS_TOKEN");
-  const label    = "aws_" + Math.random().toString(36).substr(2, 7);
-  const timebomb = core.getInput("aws-ec2-timebomb");
-  const repo     = `${github.context.repo.owner}/${github.context.repo.repo}`;
+  return new AWS.EC2();
+}
+
+async function start(label) {
+  const ec2 = get_ec2();
+  
+  const reg_token = await getGithubRegToken();
+  const timebomb  = core.getInput("aws-ec2-timebomb");
   
   const setup_github_actions_runner = [
     `#!/bin/bash -x`,
     `export RUNNER_ALLOW_RUNASROOT=1`,
-    `export RUNNER_VERSION=\$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
-    `reg_token() { REG_TOKEN=\$(curl -s -X POST -H "Authorization: token ${gh_token}" https://api.github.com/repos/${repo}/actions/runners/registration-token | sed -n \'s,.*"token": "\\(.*\\)".*,\\1,p\'); }`,
-    `curl -O -L https://github.com/actions/runner/releases/download/v\$RUNNER_VERSION/actions-runner-linux-x64-\$RUNNER_VERSION.tar.gz || shutdown -h now`,
+    `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
+    `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
     `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
-    `reg_token`,
-    `./config.sh --unattended --url https://github.com/${repo} --token \$REG_TOKEN --labels ${label} --replace || shutdown -h now`,
-    `(sleep ${timebomb}; reg_token; ./config.sh remove --token \$REG_TOKEN; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
-    `./run.sh --ephemeral`,
-    `reg_token`,
-    `./config.sh remove --token \$REG_TOKEN`,
+    `./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --labels ${label} --replace || shutdown -h now`,
+    `(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+    `./run.sh`, // --ephemeral
+    `./config.sh remove --token ${reg_token}`,
     `shutdown -h now`
   ];
   
@@ -38,7 +64,8 @@ async function main() {
       InstanceType: core.getInput("aws-ec2-type"),
       InstanceMarketOptions: { MarketType: "spot" },
       InstanceInitiatedShutdownBehavior: "terminate",
-      UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),      
+      UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
+      KeyName: "aws_apstasen",
       MinCount: 1,
       MaxCount: 1,
       TagSpecifications: [ { ResourceType: "instance", Tags: [
@@ -53,18 +80,48 @@ async function main() {
   }
   
   try {
-    core.setOutput('label', label);
     await ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
     core.info(`Found running AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
+    return label;
   } catch (error) {
     core.error(`Error searching for running AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
     throw error;
   }
 }
 
+async function stop(label) {
+  const ec2 = get_ec2();
+  try {
+    await ec2.terminateInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+    core.info(`Terminated AWS EC2 instance with label ${label}`);
+  } catch (error) {
+    core.info(`Error terminating AWS EC2 instance with label ${label}`);
+    throw error;
+  }
+  
+  const runner_id = await getGithubRunnerId(label);
+  if (runner_id) {
+    const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
+    try {
+      await octokit.request(`DELETE /repos/${repo}/actions/runners/${runner_id}`);
+      core.info(`Removed Github self-hosted runner with ${label}`);
+    } catch (error) {
+      core.error(`Error removing Github self-hosted runner with ${label}`);
+      throw error;
+    }
+  }
+}
+
 (async function () {
   try {
-    await main();
+    const mode = core.getInput("mode");
+    if (mode == "start") {
+      const label = "aws_" + Math.random().toString(36).substr(2, 7);
+      await start(label);
+      core.setOutput('label', label);
+    } else if (mode == "stop") {
+      await stop(core.getInput("label"));
+    }
   } catch (error) {
     core.error(error);
     core.setFailed(error.message);
