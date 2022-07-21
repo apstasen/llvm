@@ -94,8 +94,10 @@ async function stop(label) {
   try {
     const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
     const result = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
-    for (runner of _.filter(result, { labels: [{ name: label }] })) {
-      try {
+    for (runner of result.runners) {
+      let label_found = false;
+      for (label of runner.labels) if (label.name == label) { label_found = true; break; }
+      if (label_found) try {
         await octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
         core.info(`Removed Github self-hosted runner with ${label}`);
       } catch (error) {
