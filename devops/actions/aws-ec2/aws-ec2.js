@@ -15,18 +15,19 @@ async function main() {
   const timebomb  = core.getInput("aws-ec2-timebomb");
   
   const setup_github_actions_runner = [
-    '#!/bin/bash',
+    '#!/bin/bash -x',
     'export RUNNER_ALLOW_RUNASROOT=1',
-    'export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n "s/.*\"tag_name\": \"v\(.*\)\".*/\1/p")',
-    'curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz',
-    'tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz',
-    `./config.sh --unattended --url https://github.com/${github.context.repo.owner}/${github.context.repo.repo} --token ${reg_token} --labels ${label} --replace`,
-    //`(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+    `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n 's,.*"tag_name": "v\(.*\?\)".*,\1,p')`,
+    'curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
+    'tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
+    `./config.sh --unattended --url https://github.com/${github.context.repo.owner}/${github.context.repo.repo} --token ${reg_token} --labels ${label} --replace || shutdown -h now`,
+    `(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
     `./run.sh --once`,
     `./config.sh remove --token ${reg_token}`,
-    //'shutdown -h now'
+    'shutdown -h now'
   ];
   
+  let ec2InstanceId;
   try {
     const result = await ec2.runInstances({
       ImageId: core.getInput("aws-ami"),
@@ -40,7 +41,7 @@ async function main() {
         { Key: "Label", Value: label }
       ] } ]
     }).promise();
-    const ec2InstanceId = result.Instances[0].InstanceId;
+    ec2InstanceId = result.Instances[0].InstanceId;
     core.info(`Created AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
   } catch (error) {
     core.error(`Error creating AWS EC2 spot instance with ${label} label`);
