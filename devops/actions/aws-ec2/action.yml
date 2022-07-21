@@ -18,7 +18,7 @@ inputs:
   aws-ami:
     description: AWS AMI id
     required: false
-    default: "ami-00507b8a2be8025e7" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner user added this way:
+    default: "ami-09d882824e3551875" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001) user added this way:
     # sudo -s
     # cd /tmp
     # apt-get update
@@ -29,8 +29,8 @@ inputs:
     # useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash
     # usermod -aG docker gh_runner
     # usermod -aG video gh_runner
-    # echo '{"exec-root": "/home/gh_runner/docker", "data-root": "/home/gh_runner/docker/persistent_data"}' >/etc/docker/daemon.json
-    # shutdown
+    # sync
+    # shutdown -h now
 
     # ami-06bf0a3f89fe08f0a: Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver
     # ami-0bb1072e787242eb6: Amazon Linux 2 AMI with AMD Radeon Pro Driver
