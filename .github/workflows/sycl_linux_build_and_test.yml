@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          path: llvm
+          path: llvm/devops/actions/aws-ec2
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Start AWS EC2 runner
         id: start-aws-ec2-runner
@@ -268,7 +268,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          path: llvm
+          path: llvm/llvm/devops/actions/aws-ec2
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Stop AWS EC2 runner
         id: stop-aws-ec2-runner
