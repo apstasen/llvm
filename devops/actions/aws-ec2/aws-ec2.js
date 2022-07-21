@@ -28,18 +28,8 @@ async function getGithubRunnerId(label) {
   }
 }
 
-function get_ec2() {
-  AWS.config.update({
-    accessKeyId:     core.getInput("AWS_ACCESS_KEY"),
-    secretAccessKey: core.getInput("AWS_SECRET_KEY"),
-    region:          core.getInput("aws-region")
-  });
-  
-  return new AWS.EC2();
-}
-
 async function start(label) {
-  const ec2 = get_ec2();
+  const ec2 = new AWS.EC2();
   
   const reg_token = await getGithubRegToken();
   const timebomb  = core.getInput("aws-ec2-timebomb");
@@ -90,7 +80,7 @@ async function start(label) {
 }
 
 async function stop(label) {
-  const ec2 = get_ec2();
+  const ec2 = new AWS.EC2();
   try {
     await ec2.terminateInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
     core.info(`Terminated AWS EC2 instance with label ${label}`);
@@ -114,6 +104,11 @@ async function stop(label) {
 
 (async function () {
   try {
+    AWS.config.update({
+      accessKeyId:     core.getInput("AWS_ACCESS_KEY"),
+      secretAccessKey: core.getInput("AWS_SECRET_KEY"),
+      region:          core.getInput("aws-region")
+    });
     const mode = core.getInput("mode");
     if (mode == "start") {
       const label = "aws_" + Math.random().toString(36).substr(2, 7);
