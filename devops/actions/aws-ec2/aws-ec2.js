@@ -100,9 +100,9 @@ async function stop(label) {
       for (label_obj of runner.labels) if (label_obj.name == label) { label_found = true; break; }
       if (label_found) try {
         await octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
-        core.info(`Removed Github self-hosted runner with ${label}`);
+        core.info(`Removed Github self-hosted runner ${runner.id} with ${label}`);
       } catch (error) {
-        core.error(`Error removing Github self-hosted runner with ${label}`);
+        core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}`);
         throw error;
       }
     }
