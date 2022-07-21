@@ -36,7 +36,8 @@ async function start(label) {
   
   const setup_github_actions_runner = [
     `#!/bin/bash -x`,
-    `export SHELL=/bin/bash`,
+    `mkdir actions-runner`,
+    `cd actions-runner`,
     `export RUNNER_ALLOW_RUNASROOT=1`,
     `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
     `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
