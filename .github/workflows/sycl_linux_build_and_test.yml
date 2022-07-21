@@ -259,3 +259,23 @@ jobs:
         results_name_suffix: ${{ matrix.config }}_${{ inputs.build_artifact_suffix }}
         cmake_args: '${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}'
 
+  stop-aws-ec2-runner:
+    name: Stop self-hosted AWS EC2 runner
+    runs-on: ubuntu-latest
+    needs: [start-aws-ec2-runner, llvm_test_suite ]
+    if: "always() && (needs.start-aws-ec2-runner.outputs.job_status=='success')"
+    environment: aws
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: llvm
+      - run: npm install ./llvm/devops/actions/aws-ec2
+      - name: Stop AWS EC2 runner
+        id: stop-aws-ec2-runner
+        uses: ./llvm/devops/actions/aws-ec2
+        with:
+          mode: stop
+          label: ${{ needs.start-aws-ec2-runner.outputs.label }}
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
