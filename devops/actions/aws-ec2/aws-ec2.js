@@ -85,14 +85,16 @@ async function stop(label) {
   
   try {
     const result = await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
-    core.info(`Found AWS EC2 instance with label ${label} ` + JSON.stringify(result));
-    for (const instance of result.Reservations.Instances) {
-      try {
-        await ec2.terminateInstances({ InstanceIds: [instance.InstanceId] }).promise();
-        core.info(`Terminated AWS EC2 instance ${instance.InstanceId} with label ${label}`);
-      } catch (error) {
-        core.info(`Error terminating AWS EC2 instance ${instance.InstanceId} with label ${label}`);
-        throw error;
+    core.info(`Found AWS EC2 instance with label ${label}`);
+    for (const reservation of result.Reservations) {
+      for (const instance of reservation.Instances) {
+        try {
+          await ec2.terminateInstances({ InstanceIds: [instance.InstanceId] }).promise();
+          core.info(`Terminated AWS EC2 instance ${instance.InstanceId} with label ${label}`);
+        } catch (error) {
+          core.info(`Error terminating AWS EC2 instance ${instance.InstanceId} with label ${label}`);
+          throw error;
+        }
       }
     }
   } catch (error) {
