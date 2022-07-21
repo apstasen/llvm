@@ -10,21 +10,25 @@ async function main() {
   });
   const ec2 = new AWS.EC2();
   
-  const reg_token = core.getInput("RUNNER_REG_TOKEN");
-  const label     = "aws_" + Math.random().toString(36).substr(2, 7);
-  const timebomb  = core.getInput("aws-ec2-timebomb");
+  const gh_token = core.getInput("GH_PERSONAL_ACCESS_TOKEN");
+  const label    = "aws_" + Math.random().toString(36).substr(2, 7);
+  const timebomb = core.getInput("aws-ec2-timebomb");
+  const repo     = `${github.context.repo.owner}/${github.context.repo.repo}`;
   
   const setup_github_actions_runner = [
-    '#!/bin/bash -x',
-    'export RUNNER_ALLOW_RUNASROOT=1',
-    'export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')',
-    'curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
-    'tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
-    `./config.sh --unattended --url https://github.com/${github.context.repo.owner}/${github.context.repo.repo} --token ${reg_token} --labels ${label} --replace || shutdown -h now`,
-    `(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
-    `./run.sh --once`,
-    `./config.sh remove --token ${reg_token}`,
-    'shutdown -h now'
+    `#!/bin/bash -x`,
+    `export RUNNER_ALLOW_RUNASROOT=1`,
+    `export RUNNER_VERSION=\$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
+    `reg_token() { REG_TOKEN=\$(curl -s -X POST -H "Authorization: token ${gh_token}" https://api.github.com/repos/${repo}/actions/runners/registration-token | sed -n \'s,.*"token": "\\(.*\\)".*,\\1,p\'); }`,
+    `curl -O -L https://github.com/actions/runner/releases/download/v\$RUNNER_VERSION/actions-runner-linux-x64-\$RUNNER_VERSION.tar.gz || shutdown -h now`,
+    `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
+    `reg_token`,
+    `./config.sh --unattended --url https://github.com/${repo} --token \$REG_TOKEN --labels ${label} --replace || shutdown -h now`,
+    `(sleep ${timebomb}; reg_token; ./config.sh remove --token \$REG_TOKEN; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+    `./run.sh --ephemeral`,
+    `reg_token`,
+    `./config.sh remove --token \$REG_TOKEN`,
+    `shutdown -h now`
   ];
   
   let ec2InstanceId;
