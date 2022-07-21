@@ -78,10 +78,10 @@ jobs:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Start AWS EC2 runner
-        id: start-ec2-runner
+        id: start-aws-ec2-runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          RUNNER_REG_TOKEN: ${{ secrets.RUNNER_REG_TOKEN }}
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   build:
