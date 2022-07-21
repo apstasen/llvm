@@ -17,17 +17,6 @@ async function getGithubRegToken() {
   }
 }
 
-async function getGithubRunnerId(label) {
-  const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
-  try {
-    const runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
-    const foundRunners = _.filter(runners, { labels: [{ name: label }] });
-    return foundRunners.length > 0 ? foundRunners[0].id : null;
-  } catch (error) {
-    return null;
-  }
-}
-
 async function start(label) {
   const ec2 = new AWS.EC2();
   
@@ -102,16 +91,21 @@ async function stop(label) {
     throw error;
   }
   
-  const runner_id = await getGithubRunnerId(label);
-  if (runner_id) {
+  try {
     const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
-    try {
-      await octokit.request(`DELETE /repos/${repo}/actions/runners/${runner_id}`);
-      core.info(`Removed Github self-hosted runner with ${label}`);
-    } catch (error) {
-      core.error(`Error removing Github self-hosted runner with ${label}`);
-      throw error;
+    const result = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
+    for (runner of _.filter(result, { labels: [{ name: label }] })) {
+      try {
+        await octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
+        core.info(`Removed Github self-hosted runner with ${label}`);
+      } catch (error) {
+        core.error(`Error removing Github self-hosted runner with ${label}`);
+        throw error;
+      }
     }
+  } catch (error) {
+    core.info(`Error searching for Github action runners with label ${label}`);
+    throw error;
   }
 }
 
