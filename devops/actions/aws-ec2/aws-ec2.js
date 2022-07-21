@@ -93,8 +93,8 @@ async function stop(label) {
   
   try {
     const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
-    const result = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
-    for (runner of result.runners) {
+    const runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
+    for (runner of runners) {
       let label_found = false;
       for (label of runner.labels) if (label.name == label) { label_found = true; break; }
       if (label_found) try {
