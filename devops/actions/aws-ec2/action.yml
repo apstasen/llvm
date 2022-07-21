@@ -22,7 +22,7 @@ inputs:
   aws-ami:
     description: AWS AMI id
     required: false
-    default: "ami-0ff596d41505819fd" # Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-06-09
+    default: "ami-02f3416038bdb17fb" # Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-06-09
     # ami-06bf0a3f89fe08f0a: Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver
     # ami-0bb1072e787242eb6: Amazon Linux 2 AMI with AMD Radeon Pro Driver
   aws-ec2-type:
