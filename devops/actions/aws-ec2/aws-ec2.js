@@ -32,7 +32,7 @@ async function main() {
       ImageId: core.getInput("aws-ami"),
       InstanceType: core.getInput("aws-ec2-type"),
       InstanceMarketOptions: { MarketType: "spot" },
-      InstanceInitiatedShutdownBehavior: "terminate",
+      //InstanceInitiatedShutdownBehavior: "terminate",
       UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),      
       MinCount: 1,
       MaxCount: 1,
@@ -44,6 +44,15 @@ async function main() {
     core.info(`Created AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
   } catch (error) {
     core.error(`Error creating AWS EC2 spot instance with ${label} label`);
+    throw error;
+  }
+  
+  try {
+    await ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+    core.info(`Found running AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
+    core.setOutput('label', label);
+  } catch (error) {
+    core.error(`Error searching for running AWS EC2 spot instance ${ec2InstanceId} with ${label} label`);
     throw error;
   }
 }
