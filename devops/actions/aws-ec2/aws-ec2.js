@@ -9,7 +9,7 @@ async function main() {
     region:          core.getInput("aws-region")
   });
   const test = core.getInput("aws-access-key").length;
-  core.info(`XXX ${test}`);
+  core.info(`XXX ${test} ${process.env.aws-access-key}`);
   const ec2 = new AWS.EC2();
   
   const reg_token = core.getInput("RUNNER_REG_TOKEN");
