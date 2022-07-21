@@ -11,36 +11,17 @@ on:
     - .github/workflows/sycl_post_commit.yml
 
 jobs:
-  start-awc-ec2-runner1:
-    name: Start self-hosted EC2 runner 1
-    runs-on: ubuntu-latest
-    environment: aws
-    env:
-      aws-access-key: ${{ secrets.SECRET1 }}
-    outputs:
-      label: ${{ steps.start-awc-ec2-runner1.outputs.label }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          path: llvm
-      - run: npm install ./llvm/devops/actions/aws-ec2
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: ./llvm/devops/actions/aws-ec2
-        with:
-          RUNNER_REG_TOKEN: ${{ secrets.RUNNER_REG_TOKEN }}
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-access-key: ${{ secrets.SECRET1 }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
   linux_default:
     name: Linux Default
     uses: ./.github/workflows/sycl_linux_build_and_test.yml
+    secrets: inherit
     with:
       build_cache_root: "/__w/llvm"
       build_artifact_suffix: default
   linux_no_assert:
     name: Linux (no assert)
     uses: ./.github/workflows/sycl_linux_build_and_test.yml
+    secrets: inherit
     with:
       build_cache_root: "/__w/llvm"
       build_cache_suffix: gcc_no_assertions
