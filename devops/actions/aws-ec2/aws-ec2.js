@@ -18,13 +18,13 @@ async function main() {
     '#!/bin/bash',
     'export RUNNER_ALLOW_RUNASROOT=1',
     'export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n "s/.*\"tag_name\": \"v\(.*\)\".*/\1/p")',
-    'curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
-    'tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now',
-    `./config.sh --unattended --url https://github.com/${github.context.repo.owner}/${github.context.repo.repo} --token ${reg_token} --labels ${label} --replace || shutdown -h now`,
-    `(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+    'curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz',
+    'tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz',
+    `./config.sh --unattended --url https://github.com/${github.context.repo.owner}/${github.context.repo.repo} --token ${reg_token} --labels ${label} --replace`,
+    //`(sleep ${timebomb}; ./config.sh remove --token ${reg_token}; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
     `./run.sh --once`,
     `./config.sh remove --token ${reg_token}`,
-    'shutdown -h now'
+    //'shutdown -h now'
   ];
   
   try {
