@@ -94,7 +94,12 @@ jobs:
     steps:
     # GHA requires relative paths for actions. Copy actions from container root
     # to CWD.
-    - run: cp -r /actions .
+    - run: |
+        pwd
+        ls -la /
+        ls -la /actions
+        ls -la .
+        cp -r /actions .
     # Cleanup will be run after all actions are completed.
     - name: Register cleanup after job is finished
       uses: ./actions/cleanup
