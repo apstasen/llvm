@@ -1,6 +1,5 @@
 name: Reusable SYCL Linux build and test workflow
 
-
 on:
   workflow_call:
     inputs:
