@@ -18,7 +18,19 @@ inputs:
   aws-ami:
     description: AWS AMI id
     required: false
-    default: "ami-02f3416038bdb17fb" # Canonical, Ubuntu, 22.04 LTS, amd64 jammy image build on 2022-06-09
+    default: "ami-0e447538ab8ad8e7c" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner user added this way:
+    # sudo -s
+    # cd /tmp
+    # apt-get update
+    # curl -fsSL https://get.docker.com -o get-docker.sh
+    # sh ./get-docker.sh
+    # rm -rf get-docker.sh
+    # groupadd -g 1001 gh_runner
+    # useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash
+    # usermod -aG docker gh_runner
+    # usermod -aG video gh_runner
+    # shutdown
+
     # ami-06bf0a3f89fe08f0a: Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver
     # ami-0bb1072e787242eb6: Amazon Linux 2 AMI with AMD Radeon Pro Driver
   aws-ec2-type:
