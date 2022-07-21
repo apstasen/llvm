@@ -5,10 +5,6 @@ inputs:
   RUNNER_REG_TOKEN:
     description: Github Actions Runner registration token
     required: true
-  aws-access-key:
-    description: AWS access id
-    required: false
-    default: DDD
   AWS_ACCESS_KEY:
     description: AWS access id
     required: true
