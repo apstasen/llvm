@@ -67,7 +67,7 @@ on:
 
 jobs:
   start-aws-ec2-runner:
-    name: Start self-hosted EC2 runner
+    name: Start self-hosted AWS EC2 runner
     runs-on: ubuntu-latest
     environment: aws
     outputs:
@@ -77,7 +77,7 @@ jobs:
         with:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
-      - name: Start EC2 runner
+      - name: Start AWS EC2 runner
         id: start-ec2-runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
