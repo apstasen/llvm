@@ -36,6 +36,7 @@ async function start(label) {
   
   const setup_github_actions_runner = [
     `#!/bin/bash -x`,
+    `export SHELL=/bin/bash`,
     `export RUNNER_ALLOW_RUNASROOT=1`,
     `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
     `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
@@ -55,7 +56,7 @@ async function start(label) {
       InstanceMarketOptions: { MarketType: "spot" },
       InstanceInitiatedShutdownBehavior: "terminate",
       UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
-      KeyName: "aws_apstasen",
+      //KeyName: "aws_apstasen",
       MinCount: 1,
       MaxCount: 1,
       TagSpecifications: [ { ResourceType: "instance", Tags: [
