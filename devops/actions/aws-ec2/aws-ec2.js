@@ -60,7 +60,7 @@ async function main() {
 
 (async function () {
   try {
-    main();
+    await main();
   } catch (error) {
     core.error(error);
     core.setFailed(error.message);
