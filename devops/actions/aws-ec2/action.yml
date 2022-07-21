@@ -3,7 +3,7 @@ description: Starts AWS EC2 spot instance with github actions runner agent in it
 
 inputs:
   mode:
-    description: Mode of operation: start or stop
+    description: "Mode of operation: start or stop"
     required: false
     default: start
   GH_PERSONAL_ACCESS_TOKEN:
