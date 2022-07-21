@@ -262,8 +262,8 @@ jobs:
   stop-aws-ec2-runner:
     name: Stop self-hosted AWS EC2 runner
     runs-on: ubuntu-latest
-    needs: [start-aws-ec2-runner, llvm_test_suite ]
-    if: "always() && (needs.start-aws-ec2-runner.outputs.job_status=='success')"
+    needs: [ start-aws-ec2-runner, llvm_test_suite ]
+    if: "always() && needs.start-aws-ec2-runner.outputs.label"
     environment: aws
     steps:
       - uses: actions/checkout@v3
