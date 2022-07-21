@@ -74,20 +74,29 @@ async function start(label) {
   try {
     await ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
     core.info(`Found running AWS EC2 spot instance ${ec2id} with ${label} label`);
-    return ec2Id;
   } catch (error) {
     core.error(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label`);
     throw error;
   }
 }
 
-async function stop(label, ec2id) {
+async function stop(label) {
   const ec2 = new AWS.EC2();
+  
   try {
-    await ec2.terminateInstances({ InstanceIds: [ec2id] }).promise();
-    core.info(`Terminated AWS EC2 instance ${ec2id} with label ${label}`);
+    await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+    core.info(`Found AWS EC2 instance with label ${label}`);
+    result.Instances.forEach(function(instance) {
+      try {
+        await ec2.terminateInstances({ InstanceIds: [instance.InstanceId] }).promise();
+        core.info(`Terminated AWS EC2 instance ${instance.InstanceId} with label ${label}`);
+      } catch (error) {
+        core.info(`Error terminating AWS EC2 instance ${instance.InstanceId} with label ${label}`);
+        throw error;
+      }
+    });
   } catch (error) {
-    core.info(`Error terminating AWS EC2 instance ${ec2id} with label ${label}`);
+    core.info(`Error searching for AWS EC2 instance with label ${label}`);
     throw error;
   }
   
@@ -114,11 +123,10 @@ async function stop(label, ec2id) {
     const mode = core.getInput("mode");
     if (mode == "start") {
       const label = "aws_" + Math.random().toString(36).substr(2, 7);
-      ec2id = await start(label);
+      await start(label);
       core.setOutput('label', label);
-      core.setOutput('ec2id', ec2id);
     } else if (mode == "stop") {
-      await stop(core.getInput("ec2id"));
+      await stop(core.getInput("label"));
     }
   } catch (error) {
     core.error(error);
