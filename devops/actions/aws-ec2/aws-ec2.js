@@ -84,7 +84,7 @@ async function stop(label) {
   const ec2 = new AWS.EC2();
   
   try {
-    await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+    const result = await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
     core.info(`Found AWS EC2 instance with label ${label}`);
     try {
       for (const instance of result.Instances) {
