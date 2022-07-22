@@ -51,7 +51,7 @@
     {
       "config": "hip_amdgpu",
       "name": "HIP AMDGPU LLVM Test Suite",
-      "runs-on": "aws-cuda-${{ inputs.uniq }}",
+      "runs-on": "aws-amdgpu-${{ inputs.uniq }}",
       "aws-ami": "ami-0ccda708841dde988",
       "aws-type": "g4ad.4xlarge",
       "aws-disk": "/dev/xvda:32",
