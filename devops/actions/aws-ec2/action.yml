@@ -18,7 +18,7 @@ inputs:
   aws-ami:
     description: AWS AMI id
     required: false
-    default: "ami-073b0e27a2ce9c4e1" # "ami-09d882824e3551875" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001) user added this way:
+    default: "ami-09d882824e3551875" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001) user added this way:
     # sudo -s
     # cd /tmp
     # apt-get update
