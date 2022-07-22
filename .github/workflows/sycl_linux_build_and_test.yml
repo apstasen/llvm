@@ -68,19 +68,21 @@ on:
 jobs:
   aws-start:
     name: Start AWS EC2
+    env:
+      LABEL: "aws-ec2-${{ github.run_id }}-${{ github.run_attempt }}"
+    outputs:
+      label: ${LABEL}
     runs-on: ubuntu-latest
     environment: aws
-    outputs:
-      label: ${{ steps.aws-start.outputs.label }}
     steps:
       - uses: actions/checkout@v3
         with:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Start AWS EC2 runner
-        id: aws-start
         uses: ./llvm/devops/actions/aws-ec2
         with:
+          label: ${LABEL}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
@@ -213,39 +215,30 @@ jobs:
           script({core, process});
 
   aws-start-matrix:
+    name: Start AWS Matrix
     needs: [ build, resolve_matrix ]
-    if: ${{ contains(inputs.lts_config, 'cuda') || contains(inputs.lts_config, 'hip_amdgpu') }}
-    name: Start AWS MAtrix
+    if: ${{ inputs.lts_config != '' }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ inputs.max_parallel }}
+      matrix:
+        include: ${{ fromJSON(needs.resolve_matrix.outputs.lts) }}
     runs-on: ubuntu-latest
     environment: aws
-    outputs:
-      cuda-label: ${{ steps.aws-start-matrix-cuda.outputs.label }}
-      amdgpu-label: ${{ steps.aws-start-matrix-amdgpu.outputs.label }}
     steps:
       - uses: actions/checkout@v3
         with:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
-      - name: Start AWS EC2 runner for CUDA
-        if: ${{ contains(inputs.lts_config, 'cuda') }}
-        id: aws-start-matrix-cuda
+      - name: Start AWS EC2 runner
+        if: ${{ matrix.aws-ec2-type }}
         uses: ./llvm/devops/actions/aws-ec2
         with:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          aws-ec2-type: "m6i.xlarge"
-          aws-ec2-disk: 16
-      - name: Start AWS EC2 runner for AMDGPU
-        if: ${{ contains(inputs.lts_config, 'hip_amdgpu') }}
-        id: aws-start-matrix-amdgpu
-        uses: ./llvm/devops/actions/aws-ec2
-        with:
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          aws-ec2-type: "m6i.xlarge"
-          aws-ec2-disk: 16          
+          aws-ec2-type: ${{ matrix.aws-ec2-type }}
+          aws-ec2-disk: ${{ matrix.aws-ec2-disk }}
 
   llvm_test_suite:
     needs: [ build, resolve_matrix, aws-start-matrix ]
@@ -299,8 +292,8 @@ jobs:
   aws-stop:
     name: Stop AWS EC2
     runs-on: ubuntu-latest
-    needs: [ aws-start, aws-start-matrix, llvm_test_suite ]
-    if: "always() && (needs.aws-start.outputs.label || needs.aws-start-matrix.outputs.cuda-label || needs.aws-start-matrix.outputs.amdgpu-label)"
+    needs: [ aws-start, build ]
+    if: ${{ always() && needs.aws-start.outputs.label) }}
     environment: aws
     steps:
       - uses: actions/checkout@v3
@@ -310,26 +303,33 @@ jobs:
       - name: Stop AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          if: ${{ needs.aws-start.outputs.label }}
           label: ${{ needs.aws-start.outputs.label }}
           mode: stop
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-      - name: Stop AWS EC2 runner for CUDA
+
+  aws-stop-matrix:
+    name: Stop AWS Matrix
+    needs: [ aws-start-matrix, resolve_matrix, llvm_test_suite ]
+    if: ${{ inputs.lts_config != '' }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ inputs.max_parallel }}
+      matrix:
+        include: ${{ fromJSON(needs.resolve_matrix.outputs.lts) }}
+    runs-on: ubuntu-latest
+    environment: aws
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: llvm
+      - run: npm install ./llvm/devops/actions/aws-ec2
+      - name: Stop AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          if: ${{ needs.aws-start-matrix.outputs.cuda-label }}
-          label: ${{ needs.aws-start-matrix.outputs.cuda-label }}
-          mode: stop
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}          
-      - name: Stop AWS EC2 runner for AMDGPU
-        uses: ./llvm/devops/actions/aws-ec2
-        with:
-          if: ${{ needs.aws-start-matrix.outputs.amdgpu-label }}
-          label: ${{ needs.aws-start-matrix.outputs.amdgpu-label }}
+          if: ${{ matrix.aws-ec2-type }}
+          label: ${{ matrix.runs-on }}
           mode: stop
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
