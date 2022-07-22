@@ -80,7 +80,7 @@ async function stop(label) {
   
   try {
     const result = await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
-    core.info(`Found AWS EC2 instance with label ${label}`);
+    core.info(`Searched for AWS EC2 instance with label ${label}`);
     for (const reservation of result.Reservations) {
       for (const instance of reservation.Instances) {
         try {
@@ -100,7 +100,7 @@ async function stop(label) {
   try {
     const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
     const runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
-    core.info(`Found Github action runners with label ${label}`);
+    core.info(`Searched for Github action runners with label ${label}`);
     for (runner of runners) {
       let label_found = false;
       for (label_obj of runner.labels) if (label_obj.name == label) { label_found = true; break; }
