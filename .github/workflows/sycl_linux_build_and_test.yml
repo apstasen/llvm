@@ -187,7 +187,6 @@ jobs:
       with:
         name: sycl_lit_${{ inputs.build_artifact_suffix }}
         path: lit.tar.xz
-    - run: df -h .
 
   # This job generates matrix of tests for LLVM Test Suite
   resolve_matrix:
