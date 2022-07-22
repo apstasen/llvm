@@ -80,7 +80,7 @@ jobs:
       - name: Start AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          label: aws-ec2-${{ github.run_id }}-${{ github.run_attempt }}
+          label: ${{ outputs.label }}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
@@ -232,6 +232,7 @@ jobs:
         if: ${{ matrix.aws-ec2-type }}
         uses: ./llvm/devops/actions/aws-ec2
         with:
+          label: ${{ matrix.runs-on }}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
@@ -324,9 +325,9 @@ jobs:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Stop AWS EC2 runner
+        if: ${{ matrix.aws-ec2-type }}
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          if: ${{ matrix.aws-ec2-type }}
           label: ${{ matrix.runs-on }}
           mode: stop
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
