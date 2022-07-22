@@ -83,16 +83,16 @@ jobs:
       - name: Start AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          label: aws-ec2-${{ inputs.uniq }}
+          label: aws-build-${{ inputs.uniq }}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          #aws-ec2-type: "m6i.16xlarge"
-          aws-ec2-disk: 16
+          #aws-type: "m6i.16xlarge"
+          #aws-disk: 64
   build:
     name: Build + LIT
     needs: aws-start
-    runs-on: aws-ec2-${{ inputs.uniq }}
+    runs-on: aws-build-${{ inputs.uniq }}
     container:
       image: ${{ inputs.build_image }}
       options: -u 1001:1001
@@ -239,8 +239,9 @@ jobs:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          aws-ec2-type: ${{ matrix.aws-ec2-type }}
-          aws-ec2-disk: ${{ matrix.aws-ec2-disk }}
+          aws-ami:  ${{ matrix.aws-ami }}
+          aws-type: ${{ matrix.aws-type }}
+          aws-disk: ${{ matrix.aws-disk }}
 
   llvm_test_suite:
     needs: [ build, resolve_matrix, aws-start-matrix ]
@@ -305,7 +306,7 @@ jobs:
       - name: Stop AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          label: aws-ec2-${{ inputs.uniq }}
+          label: aws-build-${{ inputs.uniq }}
           mode: stop
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
@@ -328,7 +329,7 @@ jobs:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Stop AWS EC2 runner
-        if: ${{ matrix.aws-ec2-type }}
+        if: ${{ matrix.aws-type }}
         uses: ./llvm/devops/actions/aws-ec2
         with:
           label: ${{ matrix.runs-on }}
