@@ -64,7 +64,7 @@
       "config": "cuda",
       "name": "CUDA LLVM Test Suite",
       "runs-on": "aws-cuda-${{ inputs.uniq }}",
-      "aws-ami": "ami-00fce603528ccf4bb",
+      "aws-ami": "ami-0c0e4b36b2f9053f1",
       "aws-type": "g4dn.xlarge",
       "aws-disk": "16",
       "image": "${{ inputs.cuda_image }}",
