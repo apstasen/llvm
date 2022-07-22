@@ -2,6 +2,9 @@ name: aws-ec2
 description: Starts AWS EC2 spot instance with github actions runner agent in it to process one job
 
 inputs:
+  label:
+    description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs
+    required: true
   GH_PERSONAL_ACCESS_TOKEN:
     description: Github personal access token with repo permission
     required: true
@@ -52,9 +55,6 @@ inputs:
     description: "Mode of operation: start or stop"
     required: false
     default: start
-  label:
-    description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs
-    required: false
  
 outputs:
   label:
