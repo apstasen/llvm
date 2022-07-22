@@ -23,6 +23,7 @@ async function start(label) {
   const reg_token = await getGithubRegToken();
   const timebomb  = core.getInput("aws-timebomb");
   const ec2type   = core.getInput("aws-type");
+  const ec2disk   = core.getInput("aws-disk");
   
   const setup_github_actions_runner = [
     `#!/bin/bash -x`,
@@ -53,8 +54,9 @@ async function start(label) {
         { Key: "Label", Value: label }
       ] } ]
     };
-    if (core.getInput("aws-disk")) {
-      params.BlockDeviceMappings = [ { DeviceName: "/dev/sda1", Ebs: { VolumeSize: core.getInput("aws-disk") } } ];
+    if (ec2disk) {
+      const items = ec2disk.split(':');
+      params.BlockDeviceMappings = [ { DeviceName: items[0], Ebs: { VolumeSize: items[1] } } ];
     }
     const result = await ec2.runInstances(params).promise();
     ec2id = result.Instances[0].InstanceId;
