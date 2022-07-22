@@ -63,7 +63,7 @@
     {
       "config": "cuda",
       "name": "CUDA LLVM Test Suite",
-      "runs-on": "aws-cuda-${{ github.run_id }}-${{ github.run_attempt }}",
+      "runs-on": "${{ github.run_id }}_${{ github.run_attempt }}",
       "aws-ec2-type": "m6i.large",
       "aws-ec2-disk": "16",
       "image": "${{ inputs.cuda_image }}",
