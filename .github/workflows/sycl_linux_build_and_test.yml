@@ -232,7 +232,7 @@ jobs:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
       - name: Start AWS EC2 runner
-        if: ${{ matrix.aws-ec2-type }}
+        if: ${{ matrix.aws-type }}
         uses: ./llvm/devops/actions/aws-ec2
         with:
           label: ${{ matrix.runs-on }}
