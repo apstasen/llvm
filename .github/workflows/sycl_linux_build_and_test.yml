@@ -67,7 +67,7 @@ on:
 
 jobs:
   start-aws-ec2-runner:
-    name: Start self-hosted AWS EC2 runner
+    name: Start AWS EC2
     runs-on: ubuntu-latest
     environment: aws
     outputs:
@@ -84,8 +84,8 @@ jobs:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          aws-ec2-type: "m6i.16xlarge"
-          aws-ec2-disk: 64
+          #aws-ec2-type: "m6i.16xlarge"
+          #aws-ec2-disk: 64
   build:
     name: Build + LIT
     needs: start-aws-ec2-runner
@@ -98,97 +98,95 @@ jobs:
     # to CWD.
     - run: cp -r /actions .
     # Cleanup will be run after all actions are completed.
-    - name: Register cleanup after job is finished
-      uses: ./actions/cleanup
-    - uses: ./actions/cached_checkout
-      with:
-        path: src
-        ref: ${{ inputs.build_ref || github.ref }}
-        cache_path: "/__w/repo_cache/"
-    - name: Configure
-      env:
-        CC: ${{ inputs.cc }}
-        CXX: ${{ inputs.cxx }}
-        CACHE_ROOT: ${{ inputs.build_cache_root }}
-        CACHE_SUFFIX: ${{ inputs.build_cache_suffix }}
-        CACHE_SIZE: ${{ inputs.build_cache_size }}
-        ARGS: ${{ inputs.build_configure_extra_args }}
-        CUDA_LIB_PATH: "/usr/local/cuda/lib64/stubs"
-      run: |
-        mkdir -p $CACHE_ROOT/build_cache_$CACHE_SUFFIX
-        mkdir -p $GITHUB_WORKSPACE/build
-        cd $GITHUB_WORKSPACE/build
-        python3 $GITHUB_WORKSPACE/src/buildbot/configure.py -w $GITHUB_WORKSPACE \
-          -s $GITHUB_WORKSPACE/src -o $GITHUB_WORKSPACE/build -t Release \
-          --ci-defaults $ARGS \
-          --cmake-opt="-DLLVM_CCACHE_BUILD=ON" \
-          --cmake-opt="-DLLVM_CCACHE_DIR=$CACHE_ROOT/build_cache_$CACHE_SUFFIX" \
-          --cmake-opt="-DLLVM_CCACHE_MAXSIZE=$CACHE_SIZE" \
-          --cmake-opt="-DLLVM_INSTALL_UTILS=ON" \
-          --cmake-opt="-DSYCL_PI_TESTS=OFF"
-    - name: Compile
-      id: build
-      run: cmake --build $GITHUB_WORKSPACE/build
-    # TODO allow to optionally disable in-tree checks
-    - name: check-llvm
-      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
-      run: |
-        cmake --build $GITHUB_WORKSPACE/build --target check-llvm
-    - name: check-clang
-      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
-      run: |
-        export XDG_CACHE_HOME=$GITHUB_WORKSPACE/os_cache
-        cmake --build $GITHUB_WORKSPACE/build --target check-clang
-    - name: check-sycl
-      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
-      run: |
-        # TODO consider moving this to Dockerfile
-        export LD_LIBRARY_PATH=/usr/local/cuda/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-        cmake --build $GITHUB_WORKSPACE/build --target check-sycl
-    - name: check-llvm-spirv
-      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
-      run: |
-        cmake --build $GITHUB_WORKSPACE/build --target check-llvm-spirv
-    - name: check-xptifw
-      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
-      run: |
-        cmake --build $GITHUB_WORKSPACE/build --target check-xptifw
-    - name: check-libclc
-      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
-      run: |
-        cmake --build $GITHUB_WORKSPACE/build --target check-libclc
-    - name: Install
-      # TODO replace utility installation with a single CMake target
-      run: |
-        cmake --build $GITHUB_WORKSPACE/build --target deploy-sycl-toolchain
-        cmake --build $GITHUB_WORKSPACE/build --target utils/FileCheck/install
-        cmake --build $GITHUB_WORKSPACE/build --target utils/count/install
-        cmake --build $GITHUB_WORKSPACE/build --target utils/not/install
-        cmake --build $GITHUB_WORKSPACE/build --target utils/lit/install
-        cmake --build $GITHUB_WORKSPACE/build --target utils/llvm-lit/install
-        cmake --build $GITHUB_WORKSPACE/build --target install-clang-format
-        cmake --build $GITHUB_WORKSPACE/build --target install-clang-tidy
-        cmake --build $GITHUB_WORKSPACE/build --target install-llvm-size
-        cmake --build $GITHUB_WORKSPACE/build --target install-llvm-cov
-        cmake --build $GITHUB_WORKSPACE/build --target install-llvm-profdata
-        cmake --build $GITHUB_WORKSPACE/build --target install-compiler-rt
-
-    - name: Pack toolchain
-      run: |
-        apt-get install -y pigz
-        tar --use-compress-program=pigz -cf llvm_sycl.tar.xz -C $GITHUB_WORKSPACE/build/install .
-    - name: Pack LIT
-      run: tar --use-compress-program=pigz -cf lit.tar.xz -C $GITHUB_WORKSPACE/src/llvm/utils/lit .
-    - name: Upload toolchain
-      uses: actions/upload-artifact@v2
-      with:
-        name: sycl_linux_${{ inputs.build_artifact_suffix }}
-        path: llvm_sycl.tar.xz
-    - name: Upload LIT
-      uses: actions/upload-artifact@v2
-      with:
-        name: sycl_lit_${{ inputs.build_artifact_suffix }}
-        path: lit.tar.xz
+#    - name: Register cleanup after job is finished
+#      uses: ./actions/cleanup
+#    - uses: ./actions/cached_checkout
+#      with:
+#        path: src
+#        ref: ${{ inputs.build_ref || github.ref }}
+#        cache_path: "/__w/repo_cache/"
+#    - name: Configure
+#      env:
+#        CC: ${{ inputs.cc }}
+#        CXX: ${{ inputs.cxx }}
+#        CACHE_ROOT: ${{ inputs.build_cache_root }}
+#        CACHE_SUFFIX: ${{ inputs.build_cache_suffix }}
+#        CACHE_SIZE: ${{ inputs.build_cache_size }}
+#        ARGS: ${{ inputs.build_configure_extra_args }}
+#        CUDA_LIB_PATH: "/usr/local/cuda/lib64/stubs"
+#      run: |
+#        mkdir -p $CACHE_ROOT/build_cache_$CACHE_SUFFIX
+#        mkdir -p $GITHUB_WORKSPACE/build
+#        cd $GITHUB_WORKSPACE/build
+#        python3 $GITHUB_WORKSPACE/src/buildbot/configure.py -w $GITHUB_WORKSPACE \
+#          -s $GITHUB_WORKSPACE/src -o $GITHUB_WORKSPACE/build -t Release \
+#          --ci-defaults $ARGS \
+#          --cmake-opt="-DLLVM_CCACHE_BUILD=ON" \
+#          --cmake-opt="-DLLVM_CCACHE_DIR=$CACHE_ROOT/build_cache_$CACHE_SUFFIX" \
+#          --cmake-opt="-DLLVM_CCACHE_MAXSIZE=$CACHE_SIZE" \
+#          --cmake-opt="-DLLVM_INSTALL_UTILS=ON" \
+#          --cmake-opt="-DSYCL_PI_TESTS=OFF"
+#    - name: Compile
+#      id: build
+#      run: cmake --build $GITHUB_WORKSPACE/build
+#    # TODO allow to optionally disable in-tree checks
+#    - name: check-llvm
+#      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
+#      run: |
+#        cmake --build $GITHUB_WORKSPACE/build --target check-llvm
+#    - name: check-clang
+#      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
+#      run: |
+#        export XDG_CACHE_HOME=$GITHUB_WORKSPACE/os_cache
+#        cmake --build $GITHUB_WORKSPACE/build --target check-clang
+#    - name: check-sycl
+#      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
+#      run: |
+#        # TODO consider moving this to Dockerfile
+#        export LD_LIBRARY_PATH=/usr/local/cuda/compat/:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+#        cmake --build $GITHUB_WORKSPACE/build --target check-sycl
+#    - name: check-llvm-spirv
+#      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
+#      run: |
+#        cmake --build $GITHUB_WORKSPACE/build --target check-llvm-spirv
+#    - name: check-xptifw
+#      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
+#      run: |
+#        cmake --build $GITHUB_WORKSPACE/build --target check-xptifw
+#    - name: check-libclc
+#      if: ${{ always() && !cancelled() && steps.build.outcome == 'success' }}
+#      run: |
+#        cmake --build $GITHUB_WORKSPACE/build --target check-libclc
+#    - name: Install
+#      # TODO replace utility installation with a single CMake target
+#      run: |
+#        cmake --build $GITHUB_WORKSPACE/build --target deploy-sycl-toolchain
+#        cmake --build $GITHUB_WORKSPACE/build --target utils/FileCheck/install
+#        cmake --build $GITHUB_WORKSPACE/build --target utils/count/install
+#        cmake --build $GITHUB_WORKSPACE/build --target utils/not/install
+#        cmake --build $GITHUB_WORKSPACE/build --target utils/lit/install
+#        cmake --build $GITHUB_WORKSPACE/build --target utils/llvm-lit/install
+#        cmake --build $GITHUB_WORKSPACE/build --target install-clang-format
+#        cmake --build $GITHUB_WORKSPACE/build --target install-clang-tidy
+#        cmake --build $GITHUB_WORKSPACE/build --target install-llvm-size
+#        cmake --build $GITHUB_WORKSPACE/build --target install-llvm-cov
+#        cmake --build $GITHUB_WORKSPACE/build --target install-llvm-profdata
+#        cmake --build $GITHUB_WORKSPACE/build --target install-compiler-rt#
+#
+#    - name: Pack toolchain
+#      run: tar -cfz llvm_sycl.tar.xz -C $GITHUB_WORKSPACE/build/install .
+#    - name: Pack LIT
+#      run: tar -cfz lit.tar.xz -C $GITHUB_WORKSPACE/src/llvm/utils/lit .
+#    - name: Upload toolchain
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: sycl_linux_${{ inputs.build_artifact_suffix }}
+#        path: llvm_sycl.tar.xz
+#    - name: Upload LIT
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: sycl_lit_${{ inputs.build_artifact_suffix }}
+#        path: lit.tar.xz
 
   # This job generates matrix of tests for LLVM Test Suite
   resolve_matrix:
@@ -217,7 +215,7 @@ jobs:
   aws-start-matrix-cuda:
     needs: [ build, resolve_matrix ]
     if: ${{ contains(inputs.lts_config, 'cuda') }}        
-    name: Start AWS EC2 for CUDA
+    name: Start AWS CUDA
     runs-on: ubuntu-latest
     environment: aws
     outputs:
@@ -227,7 +225,29 @@ jobs:
         with:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
-      - name: Start AWS EC2 runner
+      - name: Start AWS EC2 runner for AMD GPU
+        id: aws-start-matrix-cuda
+        uses: ./llvm/devops/actions/aws-ec2
+        with:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          aws-ec2-type: "m6i.xlarge"
+
+  aws-start-matrix-amdgpu:
+    needs: [ build, resolve_matrix ]
+    if: ${{ contains(inputs.lts_config, 'hip_amdgpu') }}        
+    name: Start AWS AMDGPU
+    runs-on: ubuntu-latest
+    environment: aws
+    outputs:
+      label: ${{ steps.aws-start-matrix-amdgpu.outputs.label }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: llvm
+      - run: npm install ./llvm/devops/actions/aws-ec2
+      - name: Start AWS EC2 runner for AMDGPU
         id: aws-start-matrix-cuda
         uses: ./llvm/devops/actions/aws-ec2
         with:
@@ -237,7 +257,7 @@ jobs:
           aws-ec2-type: "m6i.xlarge"
 
   llvm_test_suite:
-    needs: [ build, resolve_matrix, aws-start-matrix-cuda ]
+    needs: [ build, resolve_matrix, aws-start-matrix-cuda, aws-start-matrix-amdgpu ]
     if: ${{ inputs.lts_config != '' }}
     strategy:
       fail-fast: false
@@ -286,7 +306,7 @@ jobs:
         cmake_args: '${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}'
 
   stop-aws-ec2-runner:
-    name: Stop self-hosted AWS EC2 runner
+    name: Stop AWS EC2
     runs-on: ubuntu-latest
     needs: [ start-aws-ec2-runner, llvm_test_suite ]
     if: "always() && needs.start-aws-ec2-runner.outputs.label"
