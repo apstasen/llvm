@@ -123,13 +123,12 @@ async function stop(label) {
       secretAccessKey: core.getInput("AWS_SECRET_KEY"),
       region:          core.getInput("aws-region")
     });
-    const mode = core.getInput("mode");
+    const mode  = core.getInput("mode");
+    const label = core.getInput("label");
     if (mode == "start") {
-      const label = "aws_" + Math.random().toString(36).substr(2, 7);
       await start(label);
-      core.setOutput('label', label);
     } else if (mode == "stop") {
-      await stop(core.getInput("label"));
+      await stop(label);
     }
   } catch (error) {
     core.error(error);
