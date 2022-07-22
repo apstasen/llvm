@@ -21,22 +21,32 @@ inputs:
   aws-ami:
     description: AWS AMI id
     required: false
-    default: "ami-0966bccbb521ccb24" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001), /dev/sda1 disk
-    #        "ami-04d529d9a4e16d52b" # Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver (ami-06bf0a3f89fe08f0a) with docker installed and gh_runner (1001), /dev/xvda disk
-    #        "ami-0ccda708841dde988" # Amazon Linux 2 AMI with AMD Radeon Pro Driver (ami-0bb1072e787242eb6) with docker installed and gh_runner (1001), /dev/xvda disk
-    # extra setup was done this way:
+    default: "ami-0966bccbb521ccb24" # Ubuntu 22.04 (ami-02f3416038bdb17fb with /dev/sda1 disk) with docker installed and gh_runner (1001) like this:
     # sudo -s
-    # cd /tmp
-    # apt-get update # or "yum update -y" for Amazon Linux or RHEL/CentOS (skip for amdgpu since it break amdgpu driver)
-    # curl -fsSL https://get.docker.com -o get-docker.sh
-    # sh ./get-docker.sh # or "yum install -y docker" for Amazon Linux or RHEL/CentOS
-    # rm -rf get-docker.sh
-    # systemctl daemon-reload; systemctl enable docker; systemctl restart docker
-    # for nvidia only:
-    #   distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
-    #   yum clean expire-cache; yum install -y nvidia-docker2; systemctl restart docker
+    # apt-get update
+    # curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+    # sh /tmp/get-docker.sh # or "yum install -y docker" for Amazon Linux or RHEL/CentOS
     # groupadd -g 1001 gh_runner; useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash; usermod -aG docker gh_runner; usermod -aG video gh_runner
     # sync; shutdown -h now
+    
+    # "ami-02ec0f344128253f9" # Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver (ami-06bf0a3f89fe08f0a with /dev/xvda disk) with docker installed and gh_runner (1001) like this:
+    # sudo -s
+    # yum update -y
+    # amazon-linux-extras install docker
+    # sudo systemctl --now enable docker
+    # distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+    # yum-config-manager --disable amzn2-graphics; yum clean expire-cache; yum install -y nvidia-docker2; systemctl restart docker
+    # groupadd -g 1001 gh_runner; useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash; usermod -aG docker gh_runner; usermod -aG video gh_runner
+    # sync; shutdown -h now
+    
+    # "ami-0ccda708841dde988" # Amazon Linux 2 AMI with AMD Radeon Pro Driver (ami-0bb1072e787242eb6 with /dev/xvda disk) with docker installed and gh_runner (1001) like this:
+    # sudo -s
+    # sh ./get-docker.sh # or "yum install -y docker" for Amazon Linux or RHEL/CentOS
+    # amazon-linux-extras install docker
+    # sudo systemctl --now enable docker
+    # groupadd -g 1001 gh_runner; useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash; usermod -aG docker gh_runner; usermod -aG video gh_runner
+    # sync; shutdown -h now
+
   aws-type:
     description: AWS EC2 instance type
     required: false
