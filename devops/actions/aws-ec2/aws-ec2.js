@@ -22,6 +22,7 @@ async function start(label) {
   
   const reg_token = await getGithubRegToken();
   const timebomb  = core.getInput("aws-ec2-timebomb");
+  const ec2type   = core.getInput("aws-ec2-type");
   
   const setup_github_actions_runner = [
     `#!/bin/bash -x`,
@@ -30,7 +31,7 @@ async function start(label) {
     `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
     `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
     `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
-    `su gh_runner -c "./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --name ${label} --labels ${label} --replace || shutdown -h now"`,
+    `su gh_runner -c "./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --name ${label}_${ec2type} --labels ${label} --replace || shutdown -h now"`,
     `(sleep ${timebomb}; su gh_runner -c "./config.sh remove --token ${reg_token}"; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
     `su gh_runner -c "./run.sh"`, // --ephemeral
     `su gh_runner -c "./config.sh remove --token ${reg_token}"`,
@@ -41,7 +42,7 @@ async function start(label) {
   try {
     let params = {
       ImageId: core.getInput("aws-ami"),
-      InstanceType: core.getInput("aws-ec2-type"),
+      InstanceType: ec2type,
       InstanceMarketOptions: { MarketType: "spot" },
       InstanceInitiatedShutdownBehavior: "terminate",
       UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
