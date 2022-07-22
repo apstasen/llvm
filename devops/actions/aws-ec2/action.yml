@@ -42,6 +42,7 @@ inputs:
   aws-disk:
     description: AWS EC2 instance disk size in GB (8 by default)
     required: false
+    default: 16 # Github actions container engine will fail with lack of disk space for 8GB
   aws-timebomb:
     description: AWS EC2 instance maximum live time
     required: false
