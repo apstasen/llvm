@@ -68,10 +68,8 @@ on:
 jobs:
   aws-start:
     name: Start AWS EC2
-    env:
-      LABEL: "aws-ec2-${{ github.run_id }}-${{ github.run_attempt }}"
     outputs:
-      label: ${LABEL}
+      label: aws-ec2-${{ github.run_id }}-${{ github.run_attempt }}
     runs-on: ubuntu-latest
     environment: aws
     steps:
@@ -82,7 +80,7 @@ jobs:
       - name: Start AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          label: ${LABEL}
+          label: aws-ec2-${{ github.run_id }}-${{ github.run_attempt }}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
