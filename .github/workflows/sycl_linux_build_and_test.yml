@@ -228,9 +228,11 @@ jobs:
     environment: aws
     steps:
       - uses: actions/checkout@v3
+        if: ${{ matrix.aws-type }}
         with:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
+        if: ${{ matrix.aws-type }}
       - name: Start AWS EC2 runner
         if: ${{ matrix.aws-type }}
         uses: ./llvm/devops/actions/aws-ec2
@@ -325,9 +327,11 @@ jobs:
     environment: aws
     steps:
       - uses: actions/checkout@v3
+        if: ${{ matrix.aws-type }}
         with:
           path: llvm
       - run: npm install ./llvm/devops/actions/aws-ec2
+        if: ${{ matrix.aws-type }}
       - name: Stop AWS EC2 runner
         if: ${{ matrix.aws-type }}
         uses: ./llvm/devops/actions/aws-ec2
