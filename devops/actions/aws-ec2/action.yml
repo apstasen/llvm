@@ -21,28 +21,24 @@ inputs:
   aws-ami:
     description: AWS AMI id
     required: false
-    default: "ami-0966bccbb521ccb24" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001) user added this way:
+    default: "ami-0966bccbb521ccb24" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001)
+    #        "ami-00fce603528ccf4bb" # Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver (ami-06bf0a3f89fe08f0a) with docker installed and gh_runner (1001)
+    #        "ami-0381b12717d97eaf9" # Amazon Linux 2 AMI with AMD Radeon Pro Driver (ami-0bb1072e787242eb6) with docker installed and gh_runner (1001)
+    # extra setup was done this way:
     # sudo -s
     # cd /tmp
-    # apt-get update
+    # apt-get update # or "yum update -y" for Amazon Linux or RHEL/CentOS (skip for amdgpu since it break amdgpu driver)
     # curl -fsSL https://get.docker.com -o get-docker.sh
-    # sh ./get-docker.sh
+    # sh ./get-docker.sh # or "yum install -y docker" for Amazon Linux or RHEL/CentOS
     # rm -rf get-docker.sh
-    # groupadd -g 1001 gh_runner
-    # useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash
-    # usermod -aG docker gh_runner
-    # usermod -aG video gh_runner
-    # sync
-    # shutdown -h now
-
-    # ami-06bf0a3f89fe08f0a: Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver
-    # ami-0bb1072e787242eb6: Amazon Linux 2 AMI with AMD Radeon Pro Driver
+    # groupadd -g 1001 gh_runner; useradd gh_runner -u 1001 -g 1001 -m -s /bin/bash; usermod -aG docker gh_runner; usermod -aG video gh_runner
+    # sync; shutdown -h now
   aws-ec2-type:
     description: AWS EC2 instance type
     required: false
     default: "t2.micro"
     # g4dn.xlarge: 1 NVIDIA T4 GPU, 4 CPU, 16 GB RAM 
-    # g4ad.xlarge: 1 AMD Radeon Pro V520 GPU, 4 CPU, 16 GB RAM
+    # g4ad.2xlarge: 1 AMD Radeon Pro V520 GPU, 8 CPU, 32 GB RAM (limited avaiability for g4ad.xlarge)
   aws-ec2-disk:
     description: AWS EC2 instance disk size in GB (8 by default)
     required: false
