@@ -18,7 +18,7 @@ jobs:
     with:
       build_cache_root: "/__w/llvm"
       build_artifact_suffix: default
-      lts_config: "cuda"
+      lts_config: "hip_amdgpu"
 #  linux_no_assert:
 #    name: Linux (no assert)
 #    uses: ./.github/workflows/sycl_linux_build_and_test.yml
