@@ -39,7 +39,7 @@ async function start(label) {
   
   let ec2id;
   try {
-    const result = await ec2.runInstances({
+    let params = {
       ImageId: core.getInput("aws-ami"),
       InstanceType: core.getInput("aws-ec2-type"),
       InstanceMarketOptions: { MarketType: "spot" },
@@ -51,7 +51,11 @@ async function start(label) {
       TagSpecifications: [ { ResourceType: "instance", Tags: [
         { Key: "Label", Value: label }
       ] } ]
-    }).promise();
+    };
+    if (core.getInput("aws-ec2-disk")) {
+      params.BlockDeviceMappings = [ { DeviceName: "/dev/sda", Ebs: { VolumeSize: core.getInput("aws-ec2-disk") } } ];
+    }
+    const result = await ec2.runInstances(params).promise();
     ec2id = result.Instances[0].InstanceId;
     core.info(`Created AWS EC2 spot instance ${ec2id} with ${label} label`);
   } catch (error) {
