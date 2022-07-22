@@ -174,7 +174,9 @@ jobs:
         cmake --build $GITHUB_WORKSPACE/build --target install-compiler-rt
 
     - name: Pack toolchain
-      run: tar --use-compress-program=pigz -cf llvm_sycl.tar.xz -C $GITHUB_WORKSPACE/build/install .
+      run: |
+        apt-get install -y pigz
+        tar --use-compress-program=pigz -cf llvm_sycl.tar.xz -C $GITHUB_WORKSPACE/build/install .
     - name: Pack LIT
       run: tar --use-compress-program=pigz -cf lit.tar.xz -C $GITHUB_WORKSPACE/src/llvm/utils/lit .
     - name: Upload toolchain
@@ -212,8 +214,30 @@ jobs:
           const script = require('./generate_test_matrix.js');
           script({core, process});
 
+  aws-start-matrix-cuda:
+    needs: [ build, resolve_matrix ]
+    if: ${{ contains(inputs.lts_config, 'cuda') }}        
+    name: Start AWS EC2 for CUDA
+    runs-on: ubuntu-latest
+    environment: aws
+    outputs:
+      label: ${{ steps.aws-start-matrix-cuda.outputs.label }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: llvm
+      - run: npm install ./llvm/devops/actions/aws-ec2
+      - name: Start AWS EC2 runner
+        id: aws-start-matrix-cuda
+        uses: ./llvm/devops/actions/aws-ec2
+        with:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          aws-ec2-type: "m6i.xlarge"
+
   llvm_test_suite:
-    needs: [build, resolve_matrix]
+    needs: [ build, resolve_matrix, aws-start-matrix-cuda ]
     if: ${{ inputs.lts_config != '' }}
     strategy:
       fail-fast: false
