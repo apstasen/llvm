@@ -293,7 +293,7 @@ jobs:
     name: Stop AWS EC2
     runs-on: ubuntu-latest
     needs: [ aws-start, build ]
-    if: ${{ always() && needs.aws-start.outputs.label) }}
+    if: ${{ always() && needs.aws-start.result == 'success' }}
     environment: aws
     steps:
       - uses: actions/checkout@v3
@@ -312,7 +312,7 @@ jobs:
   aws-stop-matrix:
     name: Stop AWS Matrix
     needs: [ aws-start-matrix, resolve_matrix, llvm_test_suite ]
-    if: ${{ inputs.lts_config != '' }}
+    if: ${{ always() && inputs.lts_config != '' }}
     strategy:
       fail-fast: false
       max-parallel: ${{ inputs.max_parallel }}
