@@ -21,8 +21,8 @@ async function start(label) {
   const ec2 = new AWS.EC2();
   
   const reg_token = await getGithubRegToken();
-  const timebomb  = core.getInput("aws-ec2-timebomb");
-  const ec2type   = core.getInput("aws-ec2-type");
+  const timebomb  = core.getInput("aws-timebomb");
+  const ec2type   = core.getInput("aws-type");
   
   const setup_github_actions_runner = [
     `#!/bin/bash -x`,
