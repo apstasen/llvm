@@ -296,7 +296,7 @@ jobs:
     name: Stop AWS EC2
     runs-on: ubuntu-latest
     needs: [ aws-start, build ]
-    if: ${{ always() && needs.aws-start.result == 'success' }}
+    if: ${{ always() }}
     environment: aws
     steps:
       - uses: actions/checkout@v3
