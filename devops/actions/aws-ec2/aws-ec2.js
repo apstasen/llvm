@@ -53,7 +53,7 @@ async function start(label) {
       ] } ]
     };
     if (core.getInput("aws-ec2-disk")) {
-      params.BlockDeviceMappings = [ { DeviceName: "/dev/sda", Ebs: { VolumeSize: core.getInput("aws-ec2-disk") } } ];
+      params.BlockDeviceMappings = [ { DeviceName: "/dev/sda1", Ebs: { VolumeSize: core.getInput("aws-ec2-disk") } } ];
     }
     const result = await ec2.runInstances(params).promise();
     ec2id = result.Instances[0].InstanceId;
