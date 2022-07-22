@@ -64,12 +64,15 @@ on:
         type: number
         required: false
         default: 4
+      uniq:
+        description: Unique string to name ephemerial runers in AWS
+        type: string
+        required: false
+        default: ${{ github.run_id }}-${{ github.run_attempt }}  
 
 jobs:
   aws-start:
     name: Start AWS EC2
-    outputs:
-      label: aws-ec2-${{ github.run_id }}-${{ github.run_attempt }}
     runs-on: ubuntu-latest
     environment: aws
     steps:
@@ -80,7 +83,7 @@ jobs:
       - name: Start AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          label: ${{ outputs.label }}
+          label: aws-ec2-${{ inputs.uniq }}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
@@ -89,7 +92,7 @@ jobs:
   build:
     name: Build + LIT
     needs: aws-start
-    runs-on: ${{ needs.aws-start.outputs.label }}
+    runs-on: aws-ec2-${{ inputs.uniq }}
     container:
       image: ${{ inputs.build_image }}
       options: -u 1001:1001
@@ -302,7 +305,7 @@ jobs:
       - name: Stop AWS EC2 runner
         uses: ./llvm/devops/actions/aws-ec2
         with:
-          label: ${{ needs.aws-start.outputs.label }}
+          label: aws-ec2-${{ inputs.uniq }}
           mode: stop
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
