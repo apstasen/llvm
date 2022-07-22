@@ -84,6 +84,7 @@ jobs:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          aws-ec2-type: "m6i.4xlarge"
   build:
     name: Build + LIT
     needs: start-aws-ec2-runner
