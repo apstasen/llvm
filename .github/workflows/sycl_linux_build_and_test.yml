@@ -186,6 +186,7 @@ jobs:
       with:
         name: sycl_lit_${{ inputs.build_artifact_suffix }}
         path: lit.tar.xz
+     - run: df -h .
 
   # This job generates matrix of tests for LLVM Test Suite
   resolve_matrix:
@@ -263,7 +264,7 @@ jobs:
   stop-aws-ec2-runner:
     name: Stop self-hosted AWS EC2 runner
     runs-on: ubuntu-latest
-    needs: [ start-aws-ec2-runner, build, llvm_test_suite ]
+    needs: [ start-aws-ec2-runner, llvm_test_suite ]
     if: "always() && needs.start-aws-ec2-runner.outputs.label"
     environment: aws
     steps:
