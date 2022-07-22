@@ -23,7 +23,7 @@ inputs:
     required: false
     default: "ami-0966bccbb521ccb24" # Ubuntu 22.04 (ami-02f3416038bdb17fb) with docker installed and gh_runner (1001)
     #        "ami-0c0e4b36b2f9053f1" # Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver (ami-06bf0a3f89fe08f0a) with docker installed and gh_runner (1001)
-    #        "ami-0381b12717d97eaf9" # Amazon Linux 2 AMI with AMD Radeon Pro Driver (ami-0bb1072e787242eb6) with docker installed and gh_runner (1001)
+    #        "ami-0ccda708841dde988" # Amazon Linux 2 AMI with AMD Radeon Pro Driver (ami-0bb1072e787242eb6) with docker installed and gh_runner (1001)
     # extra setup was done this way:
     # sudo -s
     # cd /tmp
