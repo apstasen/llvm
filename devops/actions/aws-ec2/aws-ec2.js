@@ -47,7 +47,7 @@ async function start(label) {
                   // instance creation will fails
   // loop for spot/ondemand instances
   for (let spot of (ec2spot ? [ 1, 0 ] : [ 0 ])) {
-    const spot_str = spot ? "spot" : "ondemand";
+    const spot_str = spot ? "spot" : "on-demand";
     for (let ec2type of ec2types) { // iterate for provided instance types
       const setup_github_actions_runner = [
         `#!/bin/bash -x`, `mkdir actions-runner`, `cd actions-runner`,
