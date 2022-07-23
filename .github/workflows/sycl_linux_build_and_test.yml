@@ -242,7 +242,7 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           aws-ami:  ${{ matrix.aws-ami }}
-          aws-type: ${{ matrix.aws-type }}
+          aws-type: ${{ fromJSON(matrix.aws-type) }}
           aws-disk: ${{ matrix.aws-disk }}
 
   llvm_test_suite:
