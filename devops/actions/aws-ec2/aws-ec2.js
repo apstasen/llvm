@@ -26,7 +26,7 @@ async function start(label) {
   
   const reg_token = await getGithubRegToken();
   const timebomb  = core.getInput("aws-timebomb");
-  const ec2type   = core.getInput("aws-type");
+  const ec2types  = typeof core.getInput("aws-type") == "string" ? [ core.getInput("aws-type") ] : core.getInput("aws-type");
   const ec2disk   = core.getInput("aws-disk");
   
   const setup_github_actions_runner = [
@@ -44,32 +44,37 @@ async function start(label) {
   ];
   
   let ec2id;
-  try {
-    let params = {
-      ImageId: core.getInput("aws-ami"),
-      InstanceType: ec2type,
-      InstanceMarketOptions: { MarketType: "spot" },
-      InstanceInitiatedShutdownBehavior: "terminate",
-      UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
-      //KeyName: "aws_apstasen",
-      MinCount: 1,
-      MaxCount: 1,
-      TagSpecifications: [ { ResourceType: "instance", Tags: [
-        { Key: "Label", Value: label }
-      ] } ]
-    };
-    if (ec2disk) {
-      const items = ec2disk.split(':');
-      params.BlockDeviceMappings = [ { DeviceName: items[0], Ebs: { VolumeSize: items[1] } } ];
+  let last_error;
+  for (let ec2type of ec2types) {
+    try {
+      let params = {
+        ImageId: core.getInput("aws-ami"),
+        InstanceType: ec2type,
+        InstanceMarketOptions: { MarketType: "spot" },
+        InstanceInitiatedShutdownBehavior: "terminate",
+        UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
+        //KeyName: "aws_apstasen",
+        MinCount: 1,
+        MaxCount: 1,
+        TagSpecifications: [ { ResourceType: "instance", Tags: [
+          { Key: "Label", Value: label }
+        ] } ]
+      };
+      if (ec2disk) {
+        const items = ec2disk.split(':');
+        params.BlockDeviceMappings = [ { DeviceName: items[0], Ebs: { VolumeSize: items[1] } } ];
+      }
+      const result = await ec2.runInstances(params).promise();
+      ec2id = result.Instances[0].InstanceId;
+      core.info(`Created AWS EC2 spot instance ${ec2id} of ${ec2type} type with ${label} label`);
+      break;
+    } catch (error) {
+      core.error(`Error creating AWS EC2 spot instance of ${ec2type} type with ${label} label`);
+      last_error = error;
     }
-    const result = await ec2.runInstances(params).promise();
-    ec2id = result.Instances[0].InstanceId;
-    core.info(`Created AWS EC2 spot instance ${ec2id} with ${label} label`);
-  } catch (error) {
-    core.error(`Error creating AWS EC2 spot instance with ${label} label`);
-    throw error;
   }
-  
+  if (!ec2id) throw last_error;
+ 
   let p = ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
   for (let i=0; i < 2; i++) {
     p = p.catch(function() { core.error(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label. Will retry.`); }).catch(rejectDelay);
