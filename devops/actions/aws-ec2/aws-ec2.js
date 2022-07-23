@@ -28,24 +28,23 @@ async function start(label) {
   const timebomb  = core.getInput("aws-timebomb");
   const ec2types  = typeof core.getInput("aws-type") == "string" ? [ core.getInput("aws-type") ] : core.getInput("aws-type");
   const ec2disk   = core.getInput("aws-disk");
-  
-  const setup_github_actions_runner = [
-    `#!/bin/bash -x`,
-    `mkdir actions-runner`,
-    `cd actions-runner`,
-    `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
-    `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
-    `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
-    `su gh_runner -c "./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --name ${label}_${ec2type} --labels ${label} --replace || shutdown -h now"`,
-    `(sleep ${timebomb}; su gh_runner -c "./config.sh remove --token ${reg_token}"; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
-    `su gh_runner -c "./run.sh"`, // --ephemeral
-    `su gh_runner -c "./config.sh remove --token ${reg_token}"`,
-    `shutdown -h now`
-  ];
-  
+
   let ec2id;
   let last_error;
   for (let ec2type of ec2types) {
+    const setup_github_actions_runner = [
+      `#!/bin/bash -x`,
+      `mkdir actions-runner`,
+      `cd actions-runner`,
+      `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
+      `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
+      `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
+      `su gh_runner -c "./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --name ${label}_${ec2type} --labels ${label} --replace || shutdown -h now"`,
+      `(sleep ${timebomb}; su gh_runner -c "./config.sh remove --token ${reg_token}"; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+      `su gh_runner -c "./run.sh"`, // --ephemeral
+      `su gh_runner -c "./config.sh remove --token ${reg_token}"`,
+      `shutdown -h now`
+    ];
     try {
       let params = {
         ImageId: core.getInput("aws-ami"),
