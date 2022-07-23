@@ -39,8 +39,8 @@ async function start(label) {
   const ec2types =
       typeof raw_ec2types == "string" ? [ raw_ec2types ] : raw_ec2types;
   const ec2disk = core.getInput("aws-disk");
-  const ec2spot = core.getInput("aws-spot") == "true";
-  const onejob = core.getInput("one-job") == "true";
+  const ec2spot = core.getInput("aws-spot") != "false";
+  const onejob = core.getInput("one-job") != "false";
 
   let ec2id;      // AWS EC2 instance id
   let last_error; // last error that ill be thrown in case all our attemps in
