@@ -32,7 +32,7 @@ async function start(label) {
 
   let ec2id;
   let last_error;
-  for (let spot of (core.getInput("aws-spot") ? [1, 0] : [0])) {
+  for (let spot of (core.getInput("aws-spot") == "true" ? [1, 0] : [0])) {
     const spot_str = spot ? "spot" : "ondemand";
     for (let ec2type of ec2types) {
       const setup_github_actions_runner = [
