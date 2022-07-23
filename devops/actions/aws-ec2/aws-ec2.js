@@ -103,10 +103,10 @@ async function stop(label) {
       }
     }
   }
- 
+
+  const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
   let runners;
   try {
-    const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
     runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
     core.info(`Searched for Github action runners with label ${label}`);
   } catch (error) {
