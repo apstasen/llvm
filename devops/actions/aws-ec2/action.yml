@@ -3,23 +3,23 @@ description: Starts AWS EC2 spot instance with github actions runner agent in it
 
 inputs:
   label:
-    description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs
+    description: "Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs"
     required: true
   GH_PERSONAL_ACCESS_TOKEN:
-    description: Github personal access token with repo permission
+    description: "Github personal access token with repo permission"
     required: true
   AWS_ACCESS_KEY:
-    description: AWS access id
+    description: "AWS access id"
     required: true
   AWS_SECRET_KEY:
-    description: AWS access secret key
+    description: "WS access secret key"
     required: true
   aws-region:
-    description: AWS EC2 region
+    description: "AWS EC2 region"
     required: false
     default: "us-east-2" # Ohio
   aws-ami:
-    description: AWS AMI id
+    description: "AWS AMI id. Makes sense only for start mode"
     required: false
     default: "ami-0966bccbb521ccb24" # Ubuntu 22.04 (ami-02f3416038bdb17fb with /dev/sda1 disk) with docker installed and gh_runner (1001) like this:
     # sudo -s
@@ -48,21 +48,21 @@ inputs:
     # sync; shutdown -h now
 
   aws-type:
-    description: AWS EC2 instance type
+    description: "AWS EC2 instance type. Makes sense only for start mode"
     required: false
     default: "[ \"t2.micro\" ]"
     # "[ \"g4dn.2xlarge\" ]": 1 NVIDIA T4 GPU, 8 CPU, 32 GB RAM 
     # "[ \"g4ad.4xlarge\" ]": 1 AMD Radeon Pro V520 GPU, 16 CPU, 64 GB RAM (overloaded pool so do not use spot here now)
   aws-spot:
-    description: Enable usage of spot instances to save money (less reliable)
+    description: "Enable usage of spot instances to save money (less reliable). Makes sense only for start mode"
     requred: false
     default: true
   aws-disk:
-    description: AWS EC2 instance AMI specific disk device path and size in GB (8 by default)
+    description: "AWS EC2 instance AMI specific disk device path and size in GB (8 by default). Makes sense only for start mode"
     required: false
     default: "/dev/sda1:16" # Github actions container engine will fail with lack of disk space for 8GB
   aws-timebomb:
-    description: AWS EC2 instance maximum live time
+    description: "AWS EC2 instance maximum live time. Makes sense only for start mode"
     required: false
     default: 1h
 
@@ -70,11 +70,11 @@ inputs:
     description: "Mode of operation: start or stop"
     required: false
     default: start
- 
-outputs:
-  label:
-    description: Name of the unique label assigned to the runner used as 'runs-on' property for the following jobs
-    
+  one-job:
+    description: "Will terminate AWS EC2 instance after one job (not waiting for stop job) saving money"
+    required: false
+    default: true
+   
 runs:
   using: node12
   main: ./aws-ec2.js
