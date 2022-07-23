@@ -71,17 +71,20 @@ async function start(label) {
         core.info(`Created AWS EC2 ${spot_str} instance ${ec2id} of ${ec2type} type with ${label} label`);
         break;
       } catch (error) {
-        core.error(`Error creating AWS EC2 ${spot_str} instance of ${ec2type} type with ${label} label`);
+        core.warning(`Error creating AWS EC2 ${spot_str} instance of ${ec2type} type with ${label} label`);
         last_error = error;
       }
     }
     if (ec2id) break;
   }
-  if (!ec2id) throw last_error;
+  if (!ec2id) {
+    core.error(`Error creating AWS EC2 instance  with ${label} label`);
+    throw last_error;
+  }
  
   let p = ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
   for (let i=0; i < 2; i++) {
-    p = p.catch(function() { core.error(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label. Will retry.`); }).catch(rejectDelay);
+    p = p.catch(function() { core.warning(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label. Will retry.`); }).catch(rejectDelay);
   }
   p = p.then(function() {
     core.info(`Found running AWS EC2 spot instance ${ec2id} with ${label} label`);
@@ -131,7 +134,7 @@ async function stop(label) {
     if (!label_found) continue;
     let p = octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
     for (let i=0; i < 5; i++) {
-      p = p.catch(function() { core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}. Will retry.`); }).catch(rejectDelay);
+      p = p.catch(function() { core.warning(`Error removing Github self-hosted runner ${runner.id} with ${label}. Will retry.`); }).catch(rejectDelay);
     }
     p = p.then(function() {
       core.info(`Removed Github self-hosted runner ${runner.id} with ${label}`);
