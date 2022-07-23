@@ -31,46 +31,50 @@ async function start(label) {
 
   let ec2id;
   let last_error;
-  for (let ec2type of ec2types) {
-    const setup_github_actions_runner = [
-      `#!/bin/bash -x`,
-      `mkdir actions-runner`,
-      `cd actions-runner`,
-      `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
-      `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
-      `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
-      `su gh_runner -c "./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --name ${label}_${ec2type} --labels ${label} --replace || shutdown -h now"`,
-      `(sleep ${timebomb}; su gh_runner -c "./config.sh remove --token ${reg_token}"; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
-      `su gh_runner -c "./run.sh"`, // --ephemeral
-      `su gh_runner -c "./config.sh remove --token ${reg_token}"`,
-      `shutdown -h now`
-    ];
-    try {
-      let params = {
-        ImageId: core.getInput("aws-ami"),
-        InstanceType: ec2type,
-        InstanceMarketOptions: { MarketType: "spot" },
-        InstanceInitiatedShutdownBehavior: "terminate",
-        UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
-        //KeyName: "aws_apstasen",
-        MinCount: 1,
-        MaxCount: 1,
-        TagSpecifications: [ { ResourceType: "instance", Tags: [
-          { Key: "Label", Value: label }
-        ] } ]
-      };
-      if (ec2disk) {
-        const items = ec2disk.split(':');
-        params.BlockDeviceMappings = [ { DeviceName: items[0], Ebs: { VolumeSize: items[1] } } ];
+  for (let spot of [1, 0]) {
+    const spot_str = spot ? "spot" : "ondemand";
+    for (let ec2type of ec2types) {
+      const setup_github_actions_runner = [
+        `#!/bin/bash -x`,
+        `mkdir actions-runner`,
+        `cd actions-runner`,
+        `export RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | sed -n \'s,.*"tag_name": "v\\(.*\\)".*,\\1,p\')`,
+        `curl -O -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
+        `tar xf ./actions-runner-linux-x64-$RUNNER_VERSION.tar.gz || shutdown -h now`,
+        `su gh_runner -c "./config.sh --unattended --url https://github.com/${repo} --token ${reg_token} --name ${label}_${ec2type}_${spot_str} --labels ${label} --replace || shutdown -h now"`,
+        `(sleep ${timebomb}; su gh_runner -c "./config.sh remove --token ${reg_token}"; shutdown -h now) &`, // timebomb to avoid paying for stale AWS instances
+        `su gh_runner -c "./run.sh"`, // --ephemeral
+        `su gh_runner -c "./config.sh remove --token ${reg_token}"`,
+        `shutdown -h now`
+      ];
+      try {
+        let params = {
+          ImageId: core.getInput("aws-ami"),
+          InstanceType: ec2type,
+          InstanceInitiatedShutdownBehavior: "terminate",
+          UserData: Buffer.from(setup_github_actions_runner.join('\n')).toString('base64'),
+          //KeyName: "aws_apstasen",
+          MinCount: 1,
+          MaxCount: 1,
+          TagSpecifications: [ { ResourceType: "instance", Tags: [
+            { Key: "Label", Value: label }
+          ] } ]
+        };
+        if (spot) params.InstanceMarketOptions = { MarketType: "spot" };
+        if (ec2disk) {
+          const items = ec2disk.split(':');
+          params.BlockDeviceMappings = [ { DeviceName: items[0], Ebs: { VolumeSize: items[1] } } ];
+        }
+        const result = await ec2.runInstances(params).promise();
+        ec2id = result.Instances[0].InstanceId;
+        core.info(`Created AWS EC2 spot instance ${ec2id} of ${ec2type} type with ${label} label`);
+        break;
+      } catch (error) {
+        core.error(`Error creating AWS EC2 spot instance of ${ec2type} type with ${label} label`);
+        last_error = error;
       }
-      const result = await ec2.runInstances(params).promise();
-      ec2id = result.Instances[0].InstanceId;
-      core.info(`Created AWS EC2 spot instance ${ec2id} of ${ec2type} type with ${label} label`);
-      break;
-    } catch (error) {
-      core.error(`Error creating AWS EC2 spot instance of ${ec2type} type with ${label} label`);
-      last_error = error;
     }
+    if (ec2id) break;
   }
   if (!ec2id) throw last_error;
  
