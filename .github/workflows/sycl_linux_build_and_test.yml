@@ -88,7 +88,7 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           aws-type: "m6i.16xlarge"
-          aws-disk: 64
+          aws-disk: "/dev/sda1:64"
   build:
     name: Build + LIT
     needs: aws-start
