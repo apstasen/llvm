@@ -17,6 +17,10 @@ async function getGithubRegToken() {
   }
 }
 
+function rejectDelay(reason) {
+  return new Promise(function(resolve, reject) { setTimeout(reject.bind(null, reason), 10*1000); });
+}
+
 async function start(label) {
   const ec2 = new AWS.EC2();
   
@@ -66,18 +70,16 @@ async function start(label) {
     throw error;
   }
   
-  try {
-    await ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+  let p = ec2.waitFor("instanceRunning", { Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+  for (let i=0; i < 2; i++) {
+    p = p.catch(function() { core.error(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label. Will retry.`); }).catch(rejectDelay);
+  }
+  p = p.then(function() {
     core.info(`Found running AWS EC2 spot instance ${ec2id} with ${label} label`);
-  } catch (error) {
+  }).catch(function(error) {
     core.error(`Error searching for running AWS EC2 spot instance ${ec2id} with ${label} label`);
     throw error;
-  }
-}
-
-
-function rejectDelay(reason) {
-  return new Promise(function(resolve, reject) { setTimeout(reject.bind(null, reason), 5000); });
+  });
 }
 
 async function stop(label) {
