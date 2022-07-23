@@ -24,10 +24,11 @@ function rejectDelay(reason) {
 async function start(label) {
   const ec2 = new AWS.EC2();
   
-  const reg_token = await getGithubRegToken();
-  const timebomb  = core.getInput("aws-timebomb");
-  const ec2types  = typeof core.getInput("aws-type") == "string" ? [ core.getInput("aws-type") ] : core.getInput("aws-type");
-  const ec2disk   = core.getInput("aws-disk");
+  const reg_token    = await getGithubRegToken();
+  const timebomb     = core.getInput("aws-timebomb");
+  const raw_ec2types = JSON.parse(core.getInput("aws-type"));
+  const ec2types     = typeof raw_ec2types == "string" ? [ raw_ec2types ] : raw_ec2types;
+  const ec2disk      = core.getInput("aws-disk");
 
   let ec2id;
   let last_error;
