@@ -120,7 +120,7 @@ async function stop(label) {
     if (!label_found) continue;
     let p = octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
     for (let i=0; i < 5; i++) {
-      p = p.catch(function() { core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}`); }).catch(rejectDelay);
+      p = p.catch(function() { core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}. Will retry.`); }).catch(rejectDelay);
     }
     p = p.then(function() {
       core.info(`Removed Github self-hosted runner ${runner.id} with ${label}`);
