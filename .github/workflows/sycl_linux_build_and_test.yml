@@ -177,9 +177,9 @@ jobs:
         cmake --build $GITHUB_WORKSPACE/build --target install-compiler-rt
 
     - name: Pack toolchain
-      run: tar -cfz llvm_sycl.tar.xz -C $GITHUB_WORKSPACE/build/install .
+      run: tar -czf llvm_sycl.tar.xz -C $GITHUB_WORKSPACE/build/install .
     - name: Pack LIT
-      run: tar -cfz lit.tar.xz -C $GITHUB_WORKSPACE/src/llvm/utils/lit .
+      run: tar -czf lit.tar.xz -C $GITHUB_WORKSPACE/src/llvm/utils/lit .
     - name: Upload toolchain
       uses: actions/upload-artifact@v2
       with:
