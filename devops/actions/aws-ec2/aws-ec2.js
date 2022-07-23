@@ -75,46 +75,59 @@ async function start(label) {
   }
 }
 
+
+function rejectDelay(reason) {
+  return new Promise(function(resolve, reject) { setTimeout(reject.bind(null, reason), 5000); });
+}
+
 async function stop(label) {
   const ec2 = new AWS.EC2();
   
+  let instances;
   try {
-    const result = await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
+    instances = await ec2.describeInstances({ Filters: [ { Name: "tag:Label", Values: [ label ] } ] }).promise();
     core.info(`Searched for AWS EC2 instance with label ${label}`);
-    for (const reservation of result.Reservations) {
-      for (const instance of reservation.Instances) {
-        try {
-          await ec2.terminateInstances({ InstanceIds: [instance.InstanceId] }).promise();
-          core.info(`Terminated AWS EC2 instance ${instance.InstanceId} with label ${label}`);
-        } catch (error) {
-          core.info(`Error terminating AWS EC2 instance ${instance.InstanceId} with label ${label}`);
-          throw error;
-        }
-      }
-    }
   } catch (error) {
     core.info(`Error searching for AWS EC2 instance with label ${label}`);
     throw error;
   }
   
-  try {
-    const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
-    const runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
-    core.info(`Searched for Github action runners with label ${label}`);
-    for (runner of runners) {
-      let label_found = false;
-      for (label_obj of runner.labels) if (label_obj.name == label) { label_found = true; break; }
-      if (label_found) try {
-        await octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
-        core.info(`Removed Github self-hosted runner ${runner.id} with ${label}`);
+  for (const reservation of instances.Reservations) {
+    for (const instance of reservation.Instances) {
+      try {
+        await ec2.terminateInstances({ InstanceIds: [instance.InstanceId] }).promise();
+        core.info(`Terminated AWS EC2 instance ${instance.InstanceId} with label ${label}`);
       } catch (error) {
-        core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}`);
+        core.info(`Error terminating AWS EC2 instance ${instance.InstanceId} with label ${label}`);
         throw error;
       }
     }
+  }
+ 
+  let runners;
+  try {
+    const octokit = github.getOctokit(core.getInput("GH_PERSONAL_ACCESS_TOKEN"));
+    runners = await octokit.paginate(`GET /repos/${repo}/actions/runners`);
+    core.info(`Searched for Github action runners with label ${label}`);
   } catch (error) {
     core.info(`Error searching for Github action runners with label ${label}`);
     throw error;
+  }
+  
+  for (runner of runners) {
+    let label_found = false;
+    for (label_obj of runner.labels) if (label_obj.name == label) { label_found = true; break; }
+    if (!label_found) continue;
+    let p = octokit.request(`DELETE /repos/${repo}/actions/runners/${runner.id}`);
+    for (let i=0; i < 5; i++) {
+      p = p.catch(function() { core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}`); }).catch(rejectDelay);
+    }
+    p = p.then(function() {
+      core.info(`Removed Github self-hosted runner ${runner.id} with ${label}`);
+    }).catch(function(error) {
+      core.error(`Error removing Github self-hosted runner ${runner.id} with ${label}`);
+      throw error;
+    });
   }
 }
 
