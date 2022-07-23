@@ -67,10 +67,10 @@ async function start(label) {
         }
         const result = await ec2.runInstances(params).promise();
         ec2id = result.Instances[0].InstanceId;
-        core.info(`Created AWS EC2 spot instance ${ec2id} of ${ec2type} type with ${label} label`);
+        core.info(`Created AWS EC2 ${spot_str} instance ${ec2id} of ${ec2type} type with ${label} label`);
         break;
       } catch (error) {
-        core.error(`Error creating AWS EC2 spot instance of ${ec2type} type with ${label} label`);
+        core.error(`Error creating AWS EC2 ${spot_str} instance of ${ec2type} type with ${label} label`);
         last_error = error;
       }
     }
