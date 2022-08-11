@@ -1,4 +1,3 @@
-
 // NOLINT: llvm-header-guard
 // __register_frame() is used with dynamically generated code to register the
 // FDE for a generated (JIT) code. This header provides protypes, since the gcc
