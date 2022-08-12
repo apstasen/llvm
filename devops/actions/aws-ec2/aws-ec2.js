@@ -122,7 +122,7 @@ async function start(param_type, param_label, param_ami, param_spot, param_disk,
     throw error;
   });
   
-  await new Promise(r => setTimeout(r, 3*60*1000));
+  //await new Promise(r => setTimeout(r, 3*60*1000));
 }
 
 // terminate (completely remove) AWS EC instances (normally one instance) with
