@@ -101,39 +101,7 @@ jobs:
       image: ${{ matrix.image }}
       options: ${{ matrix.container_options }}
     steps:
-    - name: Reset GPU
-      if: ${{ contains(matrix.config, 'gen9') }}
-      run: |
-        sudo mount -t debugfs none /sys/kernel/debug
-        sudo bash -c 'echo 1 > /sys/kernel/debug/dri/0/i915_wedged'
-    - run: cp -r /actions .
-    - name: Register cleanup after job is finished
-      uses: ./actions/cleanup
-    - name: Install drivers
-      if: env.compute_runtime_tag != ''
-      run: |
-        if [ -e /opt/install_drivers.sh ]; then
-          # TODO pack this script into container
-          wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/scripts/get_release.py
-          sudo mv get_release.py /opt/
-          sudo -E /opt/install_drivers.sh --all
-        fi
-    # FIXME cached_checkout fails here, but works everywhere else
-    - uses: actions/checkout@v2
-      with:
-        path: llvm
-    # TODO should this action be packed into container as well?
-    - uses: ./llvm/devops/actions/llvm_test_suite
-      name: Run LLVM Test Suite
-      with:
-        test_ref: ${{ inputs.lts_ref }}
-        sycl_artifact: sycl_linux_${{ inputs.build_artifact_suffix }}
-        sycl_archive: llvm_sycl.tar.xz
-        lit_artifact: sycl_lit_${{ inputs.build_artifact_suffix }}
-        lit_archive: lit.tar.xz
-        check_sycl_all: ${{ matrix.check_sycl_all }}
-        results_name_suffix: ${{ matrix.config }}_${{ inputs.build_artifact_suffix }}
-        cmake_args: '${{ matrix.cmake_args }} ${{ inputs.lts_cmake_extra_args }}'
+    - run: echo OK
 
   aws-stop:
     name: Stop AWS
