@@ -61,9 +61,6 @@ jobs:
   build:
     name: Build + LIT
     runs-on: ubuntu-latest
-    container:
-      image: ${{ inputs.build_image }}
-      options: -u 1001:1001
     steps:
     # GHA requires relative paths for actions. Copy actions from container root
     # to CWD.
@@ -102,9 +99,6 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runs-on }}
     env: ${{ matrix.env }}
-    container:
-      image: ${{ matrix.image }}
-      options: ${{ matrix.container_options }}
     steps:
     - run: echo OK
 
