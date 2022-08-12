@@ -121,6 +121,8 @@ async function start(param_type, param_label, param_ami, param_spot, param_disk,
     core.error(`Error searching for running AWS EC2 instance ${ec2id} with ${label} label`);
     throw error;
   });
+  
+  await new Promise(r => setTimeout(r, 3*60*1000));
 }
 
 // terminate (completely remove) AWS EC instances (normally one instance) with
