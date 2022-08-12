@@ -16,6 +16,9 @@ on:
     - 'clang/docs/**'
     - '**.md'
     - '**.rst'
+    
+permissions:
+  contents: read
 
 jobs:
   lint:
