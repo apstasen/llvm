@@ -42,11 +42,11 @@ jobs:
     - name: Download scripts and configs
       shell: bash
       run: |
-        wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/scripts/generate_test_matrix.js
-        wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/test_configs.json
-        wget raw.githubusercontent.com/intel/llvm/sycl/devops/dependencies.json
+        wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/scripts/generate_test_matrix.js
+        wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/test_configs.json
+        wget raw.githubusercontent.com/apstasen/llvm/sycl/devops/dependencies.json
         mv dependencies.json dependencies.sycl.json
-        wget raw.githubusercontent.com/intel/llvm/${{ github.sha }}/devops/dependencies.json
+        wget raw.githubusercontent.com/apstasen/llvm/${{ github.sha }}/devops/dependencies.json
     - id: work
       uses: actions/github-script@v6
       name: Generate matrix
