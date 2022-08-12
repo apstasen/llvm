@@ -99,7 +99,7 @@ async function start(param_type, param_label, param_ami, param_spot, param_disk,
     // we already created instance and do not need to iterate these loops
     if (ec2id) break;
   }
-  if (last_error) {
+  if (!ec2id && last_error) {
     core.error(`Error creating AWS EC2 instance with ${label} label`);
     throw last_error;
   }
