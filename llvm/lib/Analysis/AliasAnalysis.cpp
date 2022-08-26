@@ -156,7 +156,7 @@ AliasResult AAResults::alias(const MemoryLocation &LocA,
     else
       ++NumMayAlias;
   }
-  return Result;
+return Result;
 }
 
 bool AAResults::pointsToConstantMemory(const MemoryLocation &Loc,
