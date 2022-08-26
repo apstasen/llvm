@@ -15,7 +15,7 @@ runs:
       #git show HEAD^1
       #git show HEAD^2
       #git diff HEAD^2 HEAD
-      git clang-format -v HEAD^2
+      git clang-format -v ${GITHUB_SHA}
       git diff > ./clang-format.patch
   # Add patch with formatting fixes to CI job artifacts
   - uses: actions/upload-artifact@v1
