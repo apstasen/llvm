@@ -77,8 +77,8 @@ static const bool EnableAATrace = false;
 
 AAResults::AAResults(AAResults &&Arg)
     : TLI(Arg.TLI), AAs(std::move(Arg.AAs)), AADeps(std::move(Arg.AADeps)) {
-for (auto &AA : AAs)
-AA->setAAResults(this);
+              for (auto &AA : AAs)
+                AA->setAAResults(this);
 }
 
 AAResults::~AAResults() {
