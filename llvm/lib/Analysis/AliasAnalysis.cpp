@@ -185,7 +185,7 @@ ModRefInfo AAResults::getArgModRefInfo(const CallBase *Call, unsigned ArgIdx) {
       return ModRefInfo::NoModRef;
   }
 
-  return Result;
+return Result;
 }
 
 ModRefInfo AAResults::getModRefInfo(Instruction *I, const CallBase *Call2) {
