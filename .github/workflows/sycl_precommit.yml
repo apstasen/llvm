@@ -30,7 +30,6 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
-        fetch-depth: 2
     - name: Run clang-format
       uses: ./devops/actions/clang-format
 
