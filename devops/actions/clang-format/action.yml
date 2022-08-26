@@ -8,6 +8,7 @@ runs:
     run: |
       git config --global --add safe.directory /__w/llvm/llvm
       echo ${GITHUB_SHA}
+      git diff ${GITHUB_SHA} HEAD
       git clang-format ${GITHUB_SHA}
       git diff > ./clang-format.patch
   # Add patch with formatting fixes to CI job artifacts
