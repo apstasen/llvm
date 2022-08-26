@@ -30,9 +30,6 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
-    - uses: actions/checkout@v2
-      with:
-        persist-credentials: false
     - name: Run clang-format
       uses: ./devops/actions/clang-format
 
