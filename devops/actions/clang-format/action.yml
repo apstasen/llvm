@@ -10,6 +10,7 @@ runs:
       git fetch origin sycl
       echo ${GITHUB_SHA} ${{ github.event.pull_request.commits }}
       git clang-format -v ${GITHUB_SHA}
+      
       git diff > ./clang-format.patch
   # Add patch with formatting fixes to CI job artifacts
   - uses: actions/upload-artifact@v1
