@@ -8,11 +8,14 @@ runs:
     run: |
       git config --global --add safe.directory /__w/llvm/llvm
       git fetch --depth 1 origin sycl
-      git merge sycl --no-commit || exit 1
+      git merge origin/sycl --no-commit || exit 1
       echo ${GITHUB_SHA} ${{ github.event.pull_request.commits }}
       #git diff ${GITHUB_SHA} HEAD
-      git diff HEAD^1 HEAD
-      git clang-format -v HEAD^1
+      git show HEAD
+      git show HEAD^1
+      git show HEAD^2
+      git diff HEAD^2 HEAD
+      git clang-format -v HEAD^2
       git diff > ./clang-format.patch
   # Add patch with formatting fixes to CI job artifacts
   - uses: actions/upload-artifact@v1
