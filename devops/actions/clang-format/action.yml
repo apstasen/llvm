@@ -7,7 +7,7 @@ runs:
     shell: bash {0}
     run: |
       git config --global --add safe.directory /__w/llvm/llvm
-      git fetch --depth 10 origin sycl
+      #git fetch --depth 10 origin sycl
       echo ${GITHUB_SHA} ${{ github.event.pull_request.commits }}
       
       git diff ${GITHUB_SHA} HEAD
