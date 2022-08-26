@@ -1,5 +1,5 @@
 name: 'clang-format'
-description: 'Run clang-format on pull request'
+description: 'aaaRun clang-format on pull request'
 runs:
   using: "composite"
   steps:
