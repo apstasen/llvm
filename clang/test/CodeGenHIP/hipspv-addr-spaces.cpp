@@ -45,7 +45,16 @@ __device__ int* baz_c() {
 // CHECK: define{{.*}} spir_func noundef i32 addrspace(4)* @_Z5baz_sv()
 __device__ int* baz_s() {
   // CHECK: ret i32 addrspace(4)* addrspacecast (i32 addrspace(3)* @s to i32 addrspace(4)*
-  return &s;
+  
+  
+  
+  
+  
+return &
+    
+    
+    
+    s;
 }
 
 // CHECK: define{{.*}} spir_func noundef i8 addrspace(4)* @_Z3quzv()
