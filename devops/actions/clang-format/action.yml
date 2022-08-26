@@ -7,6 +7,7 @@ runs:
     shell: bash {0}
     run: |
       git config --global --add safe.directory /__w/llvm/llvm
+      git fetch origin sycl
       echo ${GITHUB_SHA} ${{ github.event.pull_request.commits }}
       git clang-format -v ${GITHUB_SHA}
       git diff > ./clang-format.patch
