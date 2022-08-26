@@ -87,8 +87,8 @@ AAResults::~AAResults() {
 // pass manager that prevent this from working. In the legacy pass manager
 // we'll end up with dangling references here in some cases.
 #if 0
-for (auto &AA : AAs)
-AA->setAAResults(nullptr);
+           for (auto &AA : AAs)
+                   AA->setAAResults(nullptr);
 #endif
 }
 
