@@ -118,8 +118,8 @@ bool AAResults::invalidate(Function &F, const PreservedAnalyses &PA,
 
 AliasResult AAResults::alias(const MemoryLocation &LocA,
                              const MemoryLocation &LocB) {
-SimpleAAQueryInfo AAQIP;
-return alias(LocA, LocB, AAQIP);
+  SimpleAAQueryInfo AAQIP;
+  return alias(LocA, LocB, AAQIP);
 }
 
 AliasResult AAResults::alias(const MemoryLocation &LocA,
