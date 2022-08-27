@@ -189,8 +189,8 @@ ModRefInfo AAResults::getArgModRefInfo(const CallBase *Call, unsigned ArgIdx) {
 }
 
 ModRefInfo AAResults::getModRefInfo(Instruction *I, const CallBase *Call2) {
-  SimpleAAQueryInfo AAQIP;
-  return getModRefInfo(I, Call2, AAQIP);
+SimpleAAQueryInfo AAQIP;
+return getModRefInfo(I, Call2, AAQIP);
 }
 
 ModRefInfo AAResults::getModRefInfo(Instruction *I, const CallBase *Call2,
